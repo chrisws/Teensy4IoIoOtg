@@ -1,3 +1,12 @@
 [submodule "modules/cores"]
 	path = modules/cores
 	url = https://github.com/PaulStoffregen/cores.git
+[submodule "modules/ADC"]
+	path = modules/ADC
+	url = https://github.com/pedvide/ADC
+[submodule "modules/SPI"]
+	path = modules/SPI
+	url = https://github.com/PaulStoffregen/SPI.git
+[submodule "modules/Wire"]
+	path = modules/Wire
+	url = https://github.com/PaulStoffregen/Wire.git

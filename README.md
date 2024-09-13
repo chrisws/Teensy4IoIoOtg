@@ -35,3 +35,11 @@ mkdir build && cd build
 cmake ..
 make
 ```
+
+5. Setup UDEV rules
+
+https://www.pjrc.com/teensy/00-teensy.rules
+
+```
+sudo cp 00-teensy.rules /etc/udev/rules.d/
+```

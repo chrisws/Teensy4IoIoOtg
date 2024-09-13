@@ -30,10 +30,10 @@
 #ifndef __ICSP_H__
 #define __ICSP_H__
 
-#include "GenericTypeDefs.h"
+#include <cstdint>
 
 void ICSPConfigure(int enable);
-void ICSPSix(DWORD inst);
+void ICSPSix(uint32_t inst);
 void ICSPRegout();
 void ICSPEnter();
 void ICSPExit();

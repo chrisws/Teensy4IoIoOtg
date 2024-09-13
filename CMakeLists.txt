@@ -1,3 +1,13 @@
+#
+# CMakeLists.txt - Teensy4 IOIO-OTG Project
+#
+# This project is a port of the IOIO-OTG firmware to the Teensy 4.x platform.
+#
+# Author: Chris Warren-Smith
+# Based on original work by: Ytai Ben-Tsvi (IOIO-OTG)
+# License: Apache License, Version 2.0
+#
+
 cmake_minimum_required(VERSION 3.10)
 project(Teensy4IoIoOtg)
 set(CMAKE_SYSTEM_NAME Generic)
@@ -22,12 +32,16 @@ set(CMAKE_SIZE arm-none-eabi-size)
 
 # Include the module directories
 add_subdirectory(src/core)
+add_subdirectory(src/ADC)
+add_subdirectory(src/SPI)
+add_subdirectory(src/Wire)
+add_subdirectory(src/app_layer_v1)
 
 # Add executable with the list of source files
-add_executable(${TARGET}.elf src/main.c)
+add_executable(${TARGET}.elf src/main.cpp)
 
 # Link against the CMSIS DSP library
-target_link_libraries(${TARGET}.elf core ${CMAKE_CURRENT_SOURCE_DIR}/tools/CMSIS-DSP/build/Source/libCMSISDSP.a -lm -lstdc++)
+target_link_libraries(${TARGET}.elf core ADC SPI Wire app_layer_v1 ${CMAKE_CURRENT_SOURCE_DIR}/tools/CMSIS-DSP/build/Source/libCMSISDSP.a -lm -lstdc++)
 
 # Post-build step to create HEX file using objcopy
 add_custom_command(TARGET ${TARGET}.elf POST_BUILD
@@ -40,20 +54,3 @@ add_custom_command(TARGET ${TARGET}.elf POST_BUILD
     COMMAND ${CMAKE_SIZE} ${TARGET}.elf
     COMMENT "Showing size of ${TARGET}.elf"
 )
-
-# Post-build steps to run Teensy tools (similar to the post-compile and reboot steps)
-if(EXISTS ${TOOLSPATH})
-    add_custom_command(TARGET ${TARGET}.elf POST_BUILD
-        COMMAND ${TOOLSPATH}/teensy_post_compile
-            -file=${TARGET}
-            -path=$<TARGET_FILE_DIR:${TARGET}.elf>
-            -tools=${TOOLSPATH}
-        COMMENT "Running Teensy post-compile tool"
-    )
-
-    add_custom_command(TARGET ${TARGET}.elf POST_BUILD
-        COMMAND ${TOOLSPATH}/teensy_reboot
-        COMMENT "Rebooting Teensy"
-        VERBATIM
-    )
-endif()

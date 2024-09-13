@@ -30,7 +30,7 @@
 #ifndef __FEATURES_H__
 #define __FEATURES_H__
 
-#include "GenericTypeDefs.h"
+#include <cstdint>
 
 void SetPinDigitalOut(int pin, int value, int open_drain);
 void SetPinDigitalIn(int pin, int pull);
@@ -42,7 +42,7 @@ void SetPinSpi(int pin, int spi_num, int mode, int enable);
 void SetPinInCap(int pin, int incap_num, int enable);
 void HardReset();
 void SoftReset();
-void CheckInterface(BYTE interface_id[8]);
+void CheckInterface(uint8_t interface_id[8]);
 
 
 #endif  // __FEATURES_H__
