@@ -47,17 +47,17 @@
 
 typedef struct {
   volatile int num_tx_since_last_report;
-  BYTE_QUEUE rx_queue;
-  BYTE_QUEUE tx_queue;
-  BYTE rx_buffer[RX_BUF_SIZE];
-  BYTE tx_buffer[TX_BUF_SIZE];
+  uint8_t_QUEUE rx_queue;
+  uint8_t_QUEUE tx_queue;
+  uint8_t rx_buffer[RX_BUF_SIZE];
+  uint8_t tx_buffer[TX_BUF_SIZE];
 } UART_STATE;
 
 static UART_STATE uarts[NUM_UART_MODULES];
 
 #define _UARTREG_REF_COMMA(num, dummy) (volatile UART*) &U##num##MODE,
 
-volatile UART* uart_reg[NUM_UART_MODULES] = {
+volatile UART *uart_reg[NUM_UART_MODULES] = {
   REPEAT_1B(_UARTREG_REF_COMMA, NUM_UART_MODULES, 0)
 };
 
@@ -81,8 +81,8 @@ static inline void UARTSendStatus(int uart_num, int enabled) {
 }
 
 static void UARTConfigInternal(int uart_num, int rate, int speed4x, int two_stop_bits, int parity, int external) {
-  volatile UART* regs = uart_reg[uart_num];
-  UART_STATE* uart = &uarts[uart_num];
+  volatile UART *regs = uart_reg[uart_num];
+  UART_STATE *uart = &uarts[uart_num];
   if (external) {
     log_printf("UARTConfig(%d, %d, %d, %d, %d)", uart_num, rate, speed4x,
                two_stop_bits, parity);
@@ -135,9 +135,9 @@ void UARTTasks() {
   int i;
   for (i = 0; i < NUM_UART_MODULES; ++i) {
     int size1, size2;
-    const BYTE *data1, *data2;
+    const uint8_t *data1, *data2;
     UART_STATE* uart = &uarts[i];
-    BYTE_QUEUE* q = &uart->rx_queue;
+    ByteQueue * q = &uart->rx_queue;
     ByteQueuePeekMax(q, 64, &data1, &size1, &data2, &size2);
     if (size1) {
       log_printf("UART %d received %d bytes", i, size1 + size2);
@@ -155,9 +155,9 @@ void UARTTasks() {
 }
 
 static void TXInterrupt(int uart_num) {
-  volatile UART* reg = uart_reg[uart_num];
-  UART_STATE* uart = &uarts[uart_num];
-  BYTE_QUEUE* q = &uart->tx_queue;
+  volatile UART *reg = uart_reg[uart_num];
+  UART_STATE *uart = &uarts[uart_num];
+  ByteQueue *q = &uart->tx_queue;
   while (ByteQueueSize(q) && !(reg->uxsta & 0x0200)) {
     // TXIF == 1 iff the hardware FIFO is empty. We're just about to make it
     // non-empty, so we are safe to clear.
@@ -170,12 +170,12 @@ static void TXInterrupt(int uart_num) {
 }
 
 static void RXInterrupt(int uart_num) {
-  volatile UART* reg = uart_reg[uart_num];
-  BYTE_QUEUE* q = &uarts[uart_num].rx_queue;
+  volatile UART *reg = uart_reg[uart_num];
+  ByteQueue *q = &uarts[uart_num].rx_queue;
   while (reg->uxsta & 0x0001) {
     // It is important to read the error bits BEFORE shifting out the data.
-    BOOL noerr = (reg->uxsta & 0x000C) == 0;
-    BYTE b = reg->uxrxreg;
+    bool noerr = (reg->uxsta & 0x000C) == 0;
+    uint8_t b = reg->uxrxreg;
     if (noerr) {
       // there is no frame/parity err
       ByteQueuePushByte(q, b);
@@ -189,7 +189,7 @@ static void RXInterrupt(int uart_num) {
 void UARTTransmit(int uart_num, const void* data, int size) {
   log_printf("UARTTransmit(%d, %p, %d)", uart_num, data, size);
   SAVE_UART_FOR_LOG(uart_num);
-  BYTE_QUEUE* q = &uarts[uart_num].tx_queue;
+  ByteQueue *q = &uarts[uart_num].tx_queue;
   PRIORITY(TX_PRIORITY) {
     ByteQueuePushBuffer(q, data, size);
     AssignUxTXIE(uart_num, 1);  // enable TX int.

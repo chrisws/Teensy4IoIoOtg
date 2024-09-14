@@ -27,33 +27,41 @@
  * or implied.
  */
 
-// Synchronization utilities.
-
-#ifndef __SYNC_H__
-#define __SYNC_H__
-
-#include <cstdint>
-
-// Disable interrupts at or below a certain level.
-// This is intended to be followed by a statement or a block, within which the
-// masking will apply. Once the block exits, even when jumping out in the middle
-// of it, the masking will be returned to its previous value.
+// Capabilities and features of specific platforms.
+// A platform is a combination of a hardaware interface and bootloader ABI.
 //
-// Example:
-// PRIORITY(5) {  // disable interrupt with priority <= 5
-//   ... do something critical ...
-// } // return to previous state
+// Provides:
+// NUM_PINS         - The number of physical pins on the board, including the
+//                    on-board LED.
+// NUM_PWM_MODULES  - The number of available PWM modules.
+// NUM_UART_MODULES - The number of available UART modules.
+// NUM_SPI_MODULES  - The number of available SPI modules.
+// NUM_I2C_MODULES  - The number of available I2C modules.
 
-#define PRIORITY(pri)
+#ifndef __PLATFORM_H__
+#define __PLATFORM_H__
 
-/* for (unsigned _sr __attribute__((cleanup(RestoreSR))) = SR, _i = 1; \ */
-/*      _i && (SR = (pri << 5));                                       \ */
-/*      _i = 0) */
+#if MCU == IMXRT1062
 
-/* // Do not call directly. */
-/* static inline void RestoreSR(unsigned const *sr) { */
-/*   SR = *sr; */
-/* } */
+#define NUM_PINS 40              // Teensy 4.0 has 40 digital pins
+#define NUM_PWM_MODULES 12       // 12 PWM channels are available
+#define NUM_UART_MODULES 8       // 8 UART modules (Serial1 to Serial8)
+#define NUM_SPI_MODULES 3        // 3 SPI modules (SPI, SPI1, SPI2)
+#define NUM_I2C_MODULES 3        // 3 I2C modules (Wire, Wire1, Wire2)
+#define NUM_INCAP_MODULES 4      // 4 Input Capture (InCap) modules (FTM timers with capture)
 
+typedef enum {
+  PORT_B,
+  PORT_C,
+  PORT_D,
+  PORT_E,
+  PORT_F,
+  PORT_G,
+  NUM_PORTS
+} PORT;
 
-#endif  // __SYNC_H__
+#else
+  #error Unknown hardware
+#endif
+
+#endif  // __PLATFORM_H__

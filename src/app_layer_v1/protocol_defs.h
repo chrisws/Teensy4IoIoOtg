@@ -30,7 +30,7 @@
 #ifndef __PROTOCOLDEFS_H__
 #define __PROTOCOLDEFS_H__
 
-#include "GenericTypeDefs.h"
+#include <cstdint>
 
 #define PACKED __attribute__ ((packed))
 
@@ -44,15 +44,15 @@
 
 // hard reset
 typedef struct PACKED {
-  DWORD magic;
+  uint32_t magic;
 } HARD_RESET_ARGS;
 
 // establish connection
 typedef struct PACKED {
-  DWORD magic;
-  BYTE hw_impl_ver[8];
-  BYTE bl_impl_ver[8];
-  BYTE fw_impl_ver[8];
+  uint32_t magic;
+  uint8_t hw_impl_ver[8];
+  uint8_t bl_impl_ver[8];
+  uint8_t fw_impl_ver[8];
 } ESTABLISH_CONNECTION_ARGS;
 
 // soft reset
@@ -61,48 +61,48 @@ typedef struct PACKED {
 
 // set pin digital out
 typedef struct PACKED {
-  BYTE open_drain : 1;
-  BYTE value : 1;
-  BYTE pin : 6;
+  uint8_t open_drain : 1;
+  uint8_t value : 1;
+  uint8_t pin : 6;
 } SET_PIN_DIGITAL_OUT_ARGS;
 
 // set digital out level
 typedef struct PACKED {
-  BYTE value : 1;
-  BYTE : 1;
-  BYTE pin : 6;
+  uint8_t value : 1;
+  uint8_t : 1;
+  uint8_t pin : 6;
 } SET_DIGITAL_OUT_LEVEL_ARGS;
 
 // report digital in status
 typedef struct PACKED {
-  BYTE level : 1;
-  BYTE : 1;
-  BYTE pin : 6;
+  uint8_t level : 1;
+  uint8_t : 1;
+  uint8_t pin : 6;
 } REPORT_DIGITAL_IN_STATUS_ARGS;
 
 // set pin digital in
 typedef struct PACKED {
-  BYTE pull : 2;
-  BYTE pin : 6;
+  uint8_t pull : 2;
+  uint8_t pin : 6;
 } SET_PIN_DIGITAL_IN_ARGS;
 
 // set change notify
 typedef struct PACKED {
-  BYTE cn : 1;
-  BYTE : 1;
-  BYTE pin : 6;
+  uint8_t cn : 1;
+  uint8_t : 1;
+  uint8_t pin : 6;
 } SET_CHANGE_NOTIFY_ARGS;
 
 // register periodic digital sampling
 typedef struct PACKED {
-  BYTE pin : 6;
-  BYTE : 2;
-  BYTE freq_scale;
+  uint8_t pin : 6;
+  uint8_t : 2;
+  uint8_t freq_scale;
 } REGISTER_PERIODIC_DIGITAL_SAMPLING_ARGS;
 
 // report periodic digital in status
 typedef struct PACKED {
-  BYTE size;
+  uint8_t size;
 } REPORT_PERIODIC_DIGITAL_IN_STATUS_ARGS;
 
 // reserved
@@ -112,44 +112,44 @@ typedef struct PACKED {
 
 // set pin pwm
 typedef struct PACKED {
-  BYTE pin : 6;
-  BYTE : 2;
-  BYTE pwm_num : 4;
-  BYTE : 3;
-  BYTE enable : 1;
+  uint8_t pin : 6;
+  uint8_t : 2;
+  uint8_t pwm_num : 4;
+  uint8_t : 3;
+  uint8_t enable : 1;
 } SET_PIN_PWM_ARGS;
 
 // set pwm duty cycle
 typedef struct PACKED {
-  BYTE fraction : 2;
-  BYTE pwm_num : 4;
-  BYTE : 2;
-  WORD dc;
+  uint8_t fraction : 2;
+  uint8_t pwm_num : 4;
+  uint8_t : 2;
+  uint16_t dc;
 } SET_PWM_DUTY_CYCLE_ARGS;
 
 // set pwm period
 typedef struct PACKED {
-  BYTE scale_l : 1;
-  BYTE pwm_num : 4;
-  BYTE : 2;
-  BYTE scale_h : 1;
-  WORD period;
+  uint8_t scale_l : 1;
+  uint8_t pwm_num : 4;
+  uint8_t : 2;
+  uint8_t scale_h : 1;
+  uint16_t period;
 } SET_PWM_PERIOD_ARGS;
 
 // uart report tx status
 typedef struct PACKED {
-  BYTE uart_num : 2;
-  WORD bytes_to_add : 14;
+  uint8_t uart_num : 2;
+  uint16_t bytes_to_add : 14;
 } UART_REPORT_TX_STATUS_ARGS;
 
 // set pin analog in
 typedef struct PACKED {
-  BYTE pin;
+  uint8_t pin;
 } SET_PIN_ANALOG_IN_ARGS;
 
 // report analog in format
 typedef struct PACKED {
-  BYTE num_pins;
+  uint8_t num_pins;
 } REPORT_ANALOG_IN_FORMAT_ARGS;
 
 // report analog in status
@@ -158,161 +158,161 @@ typedef struct PACKED {
 
 // uart data
 typedef struct PACKED {
-  BYTE size : 6;
-  BYTE uart_num : 2;
-  BYTE data[0];
+  uint8_t size : 6;
+  uint8_t uart_num : 2;
+  uint8_t data[0];
 } UART_DATA_ARGS;
 
 // uart config
 typedef struct PACKED {
-  BYTE parity : 2;
-  BYTE two_stop_bits : 1;
-  BYTE speed4x : 1;
-  BYTE : 2;
-  BYTE uart_num : 2;
-  WORD rate;
+  uint8_t parity : 2;
+  uint8_t two_stop_bits : 1;
+  uint8_t speed4x : 1;
+  uint8_t : 2;
+  uint8_t uart_num : 2;
+  uint16_t rate;
 } UART_CONFIG_ARGS;
 
 // uart status
 typedef struct PACKED {
-  BYTE uart_num : 2;
-  BYTE : 5;
-  BYTE enabled : 1;
+  uint8_t uart_num : 2;
+  uint8_t : 5;
+  uint8_t enabled : 1;
 } UART_STATUS_ARGS;
 
 // set pin uart
 typedef struct PACKED {
-  BYTE pin : 6;
-  BYTE : 2;
-  BYTE uart_num : 2;
-  BYTE : 4;
-  BYTE dir : 1;
-  BYTE enable : 1;
+  uint8_t pin : 6;
+  uint8_t : 2;
+  uint8_t uart_num : 2;
+  uint8_t : 4;
+  uint8_t dir : 1;
+  uint8_t enable : 1;
 } SET_PIN_UART_ARGS;
 
 // spi report tx status
 typedef struct PACKED {
-  BYTE spi_num : 2;
-  WORD bytes_to_add : 14;
+  uint8_t spi_num : 2;
+  uint16_t bytes_to_add : 14;
 } SPI_REPORT_TX_STATUS_ARGS;
 
 // spi data
 typedef struct PACKED {
-  BYTE size : 6;
-  BYTE spi_num : 2;
-  BYTE ss_pin : 6;
-  BYTE : 2;
-  BYTE data[0];
+  uint8_t size : 6;
+  uint8_t spi_num : 2;
+  uint8_t ss_pin : 6;
+  uint8_t : 2;
+  uint8_t data[0];
 } SPI_DATA_ARGS;
 
 // spi master request
 typedef struct PACKED {
-  BYTE ss_pin : 6;
-  BYTE spi_num : 2;
-  BYTE total_size : 6;
-  BYTE res_size_neq_total : 1;
-  BYTE data_size_neq_total : 1;
+  uint8_t ss_pin : 6;
+  uint8_t spi_num : 2;
+  uint8_t total_size : 6;
+  uint8_t res_size_neq_total : 1;
+  uint8_t data_size_neq_total : 1;
   union {
-    BYTE data_size;
-    BYTE vararg[0];
+    uint8_t data_size;
+    uint8_t vararg[0];
   };
 } SPI_MASTER_REQUEST_ARGS;
 
 // spi configure master
 typedef struct PACKED {
-  BYTE div : 3;
-  BYTE scale : 2;
-  BYTE spi_num : 2;
-  BYTE : 1;
-  BYTE clk_pol : 1;
-  BYTE clk_edge : 1;
-  BYTE smp_end : 1;
-  BYTE : 5;
+  uint8_t div : 3;
+  uint8_t scale : 2;
+  uint8_t spi_num : 2;
+  uint8_t : 1;
+  uint8_t clk_pol : 1;
+  uint8_t clk_edge : 1;
+  uint8_t smp_end : 1;
+  uint8_t : 5;
 } SPI_CONFIGURE_MASTER_ARGS;
 
 // spi status
 typedef struct PACKED {
-  BYTE spi_num : 2;
-  BYTE : 5;
-  BYTE enabled : 1;
+  uint8_t spi_num : 2;
+  uint8_t : 5;
+  uint8_t enabled : 1;
 } SPI_STATUS_ARGS;
 
 // set pin spi
 typedef struct PACKED {
-  BYTE pin : 6;
-  BYTE : 2;
-  BYTE spi_num : 2;
-  BYTE mode : 2;
-  BYTE enable : 1;
-  BYTE : 3;
+  uint8_t pin : 6;
+  uint8_t : 2;
+  uint8_t spi_num : 2;
+  uint8_t mode : 2;
+  uint8_t enable : 1;
+  uint8_t : 3;
 } SET_PIN_SPI_ARGS;
 
 // i2c configure master
 typedef struct PACKED {
-  BYTE i2c_num : 2;
-  BYTE : 3;
-  BYTE rate : 2;
-  BYTE smbus_levels : 1;
+  uint8_t i2c_num : 2;
+  uint8_t : 3;
+  uint8_t rate : 2;
+  uint8_t smbus_levels : 1;
 } I2C_CONFIGURE_MASTER_ARGS;
 
 // i2c status
 typedef struct PACKED {
-  BYTE i2c_num : 2;
-  BYTE : 5;
-  BYTE enabled : 1;
+  uint8_t i2c_num : 2;
+  uint8_t : 5;
+  uint8_t enabled : 1;
 } I2C_STATUS_ARGS;
 
 // i2c write read
 typedef struct PACKED {
-  BYTE i2c_num : 2;
-  BYTE : 3;
-  BYTE ten_bit_addr : 1;
-  BYTE addr_msb : 2;
-  BYTE addr_lsb;
-  BYTE write_size;
-  BYTE read_size;
-  BYTE data[0];
+  uint8_t i2c_num : 2;
+  uint8_t : 3;
+  uint8_t ten_bit_addr : 1;
+  uint8_t addr_msb : 2;
+  uint8_t addr_lsb;
+  uint8_t write_size;
+  uint8_t read_size;
+  uint8_t data[0];
 } I2C_WRITE_READ_ARGS;
 
 // i2c result
 typedef struct PACKED {
-  BYTE i2c_num : 2;
-  BYTE : 6;
-  BYTE size;
+  uint8_t i2c_num : 2;
+  uint8_t : 6;
+  uint8_t size;
 } I2C_RESULT_ARGS;
 
 // i2c report tx status
 typedef struct PACKED {
-  BYTE i2c_num : 2;
-  WORD bytes_to_add : 14;
+  uint8_t i2c_num : 2;
+  uint16_t bytes_to_add : 14;
 } I2C_REPORT_TX_STATUS_ARGS;
 
 // set analog pin sampling
 typedef struct PACKED {
-  BYTE pin : 6;
-  BYTE : 1;
-  BYTE enable : 1;
+  uint8_t pin : 6;
+  uint8_t : 1;
+  uint8_t enable : 1;
 } SET_ANALOG_IN_SAMPLING_ARGS;
 
 // check interface
 typedef struct PACKED {
-  BYTE interface_id[8];
+  uint8_t interface_id[8];
 } CHECK_INTERFACE_ARGS;
 
 // check interface response
 typedef struct PACKED {
-  BYTE supported : 1;
-  BYTE : 7;
+  uint8_t supported : 1;
+  uint8_t : 7;
 } CHECK_INTERFACE_RESPONSE_ARGS;
 
 // icsp six
 typedef struct PACKED {
-    DWORD inst : 24;
+    uint32_t inst : 24;
 } ICSP_SIX_ARGS;
 
 // icsp report rx status
 typedef struct PACKED {
-    WORD bytes_to_add;
+    uint16_t bytes_to_add;
 } ICSP_REPORT_RX_STATUS_ARGS;
 
 // icsp regout
@@ -321,7 +321,7 @@ typedef struct PACKED {
 
 // icsp result
 typedef struct PACKED {
-    WORD reg;
+    uint16_t reg;
 } ICSP_RESULT_ARGS;
 
 // icsp programming enter
@@ -334,41 +334,41 @@ typedef struct PACKED {
 
 // icsp configure
 typedef struct PACKED {
-    BYTE enable : 1;
+    uint8_t enable : 1;
 } ICSP_CONFIG_ARGS;
 
 // incap configure
 typedef struct PACKED {
-    BYTE incap_num : 4;
-    BYTE : 4;
-    BYTE clock : 2;
-    BYTE : 1;
-    BYTE mode : 3;
-    BYTE : 1;
-    BYTE double_prec : 1;
+    uint8_t incap_num : 4;
+    uint8_t : 4;
+    uint8_t clock : 2;
+    uint8_t : 1;
+    uint8_t mode : 3;
+    uint8_t : 1;
+    uint8_t double_prec : 1;
 } INCAP_CONFIG_ARGS;
 
 // incap status
 typedef struct PACKED {
-    BYTE incap_num : 4;
-    BYTE : 3;
-    BYTE enabled : 1;
+    uint8_t incap_num : 4;
+    uint8_t : 3;
+    uint8_t enabled : 1;
 } INCAP_STATUS_ARGS;
 
 // set pin incap
 typedef struct PACKED {
-    BYTE pin : 6;
-    BYTE : 2;
-    BYTE incap_num : 4;
-    BYTE : 3;
-    BYTE enable : 1;
+    uint8_t pin : 6;
+    uint8_t : 2;
+    uint8_t incap_num : 4;
+    uint8_t : 3;
+    uint8_t enable : 1;
 } SET_PIN_INCAP_ARGS;
 
 // incap report
 typedef struct PACKED {
-    BYTE incap_num : 4;
-    BYTE : 2;
-    BYTE size : 2;
+    uint8_t incap_num : 4;
+    uint8_t : 2;
+    uint8_t size : 2;
 } INCAP_REPORT_ARGS;
 
 // soft close
@@ -377,52 +377,52 @@ typedef struct PACKED {
 
 // set pin capsense
 typedef struct PACKED {
-  BYTE pin : 6;
-  BYTE : 2;
+  uint8_t pin : 6;
+  uint8_t : 2;
 } SET_PIN_CAPSENSE_ARGS;
 
 // capsense report
 typedef struct PACKED {
-  BYTE pin : 6;
-  WORD value : 10;
+  uint8_t pin : 6;
+  uint16_t value : 10;
 } CAPSENSE_REPORT_ARGS;
 
 // set capsense sampling
 typedef struct PACKED {
-  BYTE pin : 6;
-  BYTE : 1;
-  BYTE enable : 1;
+  uint8_t pin : 6;
+  uint8_t : 1;
+  uint8_t enable : 1;
 } SET_CAPSENSE_SAMPLING_ARGS;
 
 // sequencer configure
 typedef struct PACKED {
-  BYTE size;
-  BYTE config[0];
+  uint8_t size;
+  uint8_t config[0];
 } SEQUENCER_CONFIGURE_ARGS;
 
 // sequencer push cue
 typedef struct PACKED {
-  WORD time;
-  BYTE cue[0];
+  uint16_t time;
+  uint8_t cue[0];
 } SEQUENCER_PUSH_ARGS;
 
 // sequencer control
 typedef struct PACKED {
-  BYTE cmd;
+  uint8_t cmd;
   union {
-    BYTE extra[0];
+    uint8_t extra[0];
   };
 } SEQUENCER_CONTROL_ARGS;
 
 typedef struct PACKED {
-  BYTE event;
+  uint8_t event;
 } SEQUENCER_EVENT_ARGS;
 
 // BOOKMARK(add_feature): Add a struct for the new incoming / outgoing message
 // arguments.
 
 typedef struct PACKED {
-  BYTE type;
+  uint8_t type;
   union PACKED {
     HARD_RESET_ARGS                          hard_reset;
     SOFT_RESET_ARGS                          soft_reset;
@@ -460,11 +460,11 @@ typedef struct PACKED {
     SEQUENCER_CONTROL_ARGS                   sequencer_control;
     // BOOKMARK(add_feature): Add argument struct to the union.
   } args;
-  BYTE __vabuf[72];  // buffer for var args. never access directly!
+  uint8_t __vabuf[72];  // buffer for var args. never access directly!
 } INCOMING_MESSAGE;
 
 typedef struct PACKED {
-  BYTE type;
+  uint8_t type;
   union PACKED {
     ESTABLISH_CONNECTION_ARGS               establish_connection;
     REPORT_DIGITAL_IN_STATUS_ARGS           report_digital_in_status;

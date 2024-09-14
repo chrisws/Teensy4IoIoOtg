@@ -27,33 +27,30 @@
  * or implied.
  */
 
-// Synchronization utilities.
+#ifndef __LOGGING_H__
+#define __LOGGING_H__
 
-#ifndef __SYNC_H__
-#define __SYNC_H__
+#ifdef ENABLE_LOGGING
+  #include <stdio.h>
+  #include "uart2.h"
+  #include "GenericTypeDefs.h"
 
-#include <cstdint>
+  #define STRINGIFY(x) #x
+  #define TOSTRING(x) STRINGIFY(x)
+  
+  void log_print_buf(const void* buf, int size);
+  #define log_printf(f, ...) printf("[%s:%d] " f "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+  void log_init();
 
-// Disable interrupts at or below a certain level.
-// This is intended to be followed by a statement or a block, within which the
-// masking will apply. Once the block exits, even when jumping out in the middle
-// of it, the masking will be returned to its previous value.
-//
-// Example:
-// PRIORITY(5) {  // disable interrupt with priority <= 5
-//   ... do something critical ...
-// } // return to previous state
-
-#define PRIORITY(pri)
-
-/* for (unsigned _sr __attribute__((cleanup(RestoreSR))) = SR, _i = 1; \ */
-/*      _i && (SR = (pri << 5));                                       \ */
-/*      _i = 0) */
-
-/* // Do not call directly. */
-/* static inline void RestoreSR(unsigned const *sr) { */
-/*   SR = *sr; */
-/* } */
+  #define SAVE_PIN_FOR_LOG(pin) if (pin == 32) return
+  #define SAVE_UART_FOR_LOG(uart) if (uart == 1) return
+#else
+  #define log_print_buf(b,s)
+  #define log_printf(...)
+  #define SAVE_PIN_FOR_LOG(pin)
+  #define SAVE_UART_FOR_LOG(uart)
+  #define log_init()
+#endif
 
 
-#endif  // __SYNC_H__
+#endif  // __LOGGING_H__

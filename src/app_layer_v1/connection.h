@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,35 +26,16 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
-// Synchronization utilities.
+#pragma once
 
-#ifndef __SYNC_H__
-#define __SYNC_H__
+typedef int CHANNEL_HANDLE;
 
-#include <cstdint>
-
-// Disable interrupts at or below a certain level.
-// This is intended to be followed by a statement or a block, within which the
-// masking will apply. Once the block exits, even when jumping out in the middle
-// of it, the masking will be returned to its previous value.
-//
-// Example:
-// PRIORITY(5) {  // disable interrupt with priority <= 5
-//   ... do something critical ...
-// } // return to previous state
-
-#define PRIORITY(pri)
-
-/* for (unsigned _sr __attribute__((cleanup(RestoreSR))) = SR, _i = 1; \ */
-/*      _i && (SR = (pri << 5));                                       \ */
-/*      _i = 0) */
-
-/* // Do not call directly. */
-/* static inline void RestoreSR(unsigned const *sr) { */
-/*   SR = *sr; */
-/* } */
+void ConnectionSend(CHANNEL_HANDLE ch, const void *data, int size);
+int ConnectionGetMaxPacket(CHANNEL_HANDLE ch);
+bool ConnectionCanSend(CHANNEL_HANDLE ch);
+void ConnectionCloseChannel(CHANNEL_HANDLE ch);
 
 
-#endif  // __SYNC_H__

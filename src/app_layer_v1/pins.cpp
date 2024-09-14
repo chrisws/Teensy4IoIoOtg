@@ -1,10 +1,5 @@
-Content-Type: text/enriched
-Text-Width: 70
-
-<italic><x-color><param>#586e75</param>/*</x-color></italic><italic><x-color><param>#586e75</param>
- * Teensy4 IOIO-OTG Project
- * This project is a port of the IOIO-OTG firmware to the Teensy 4.x platform.
- * Portions of this code may have been rewritten or replaced entirely.
+/*
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
@@ -32,58 +27,50 @@ Text-Width: 70
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
  *
-</x-color></italic><italic><x-color><param>#586e75</param> */</x-color></italic>
+ */
 
+#include <assert.h>
 
-<x-color><param>olive drab</param>#include</x-color> <x-color><param>dark turquoise</param><<assert.h></x-color>
+#include "pins.h"
 
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+#define SFR volatile unsigned int
 
-<x-color><param>olive drab</param>#include</x-color> <x-color><param>dark turquoise</param>"pins.h"</x-color>
+unsigned int CNENB = 0x0000;
+unsigned int CNENC = 0x0000;
+unsigned int CNEND = 0x0000;
+unsigned int CNENE = 0x0000;
+unsigned int CNENF = 0x0000;
+unsigned int CNENG = 0x0000;
+unsigned int CNFORCEB = 0x0000;
+unsigned int CNFORCEC = 0x0000;
+unsigned int CNFORCED = 0x0000;
+unsigned int CNFORCEE = 0x0000;
+unsigned int CNFORCEF = 0x0000;
+unsigned int CNFORCEG = 0x0000;
+unsigned int CNBACKUPB = 0x0000;
+unsigned int CNBACKUPC = 0x0000;
+unsigned int CNBACKUPD = 0x0000;
+unsigned int CNBACKUPE = 0x0000;
+unsigned int CNBACKUPF = 0x0000;
+unsigned int CNBACKUPG = 0x0000;
 
+typedef struct {
+  SFR* tris;
+  SFR* ansel;
+  SFR* port;
+  SFR* lat;
+  SFR* odc;
+  unsigned int* fake_cnen;
+  unsigned int* cn_backup;
+  unsigned int* cn_force;
+  unsigned int pos_mask;
+  unsigned int neg_mask;
+  PORT name;
+  int nbit;
+} PORT_INFO;
 
-<x-color><param>olive drab</param>#define</x-color> <x-color><param>#b58900</param>ARRAY_SIZE</x-color>(<x-color><param>#6c71c4</param>x</x-color>) (<x-color><param>#859900</param>sizeof</x-color>(x) / <x-color><param>#859900</param>sizeof</x-color>(x[0]))
-<x-color><param>olive drab</param>#define</x-color> <x-color><param>#6c71c4</param>SFR</x-color> <x-color><param>#859900</param>volatile</x-color> <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color>
-
-
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNENB</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNENC</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNEND</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNENE</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNENF</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNENG</x-color> = 0x0000;
-
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNFORCEB</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNFORCEC</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNFORCED</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNFORCEE</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNFORCEF</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNFORCEG</x-color> = 0x0000;
-
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNBACKUPB</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNBACKUPC</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNBACKUPD</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNBACKUPE</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNBACKUPF</x-color> = 0x0000;
-<x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>CNBACKUPG</x-color> = 0x0000;
-
-
-<x-color><param>#859900</param>typedef</x-color> <x-color><param>#859900</param>struct</x-color> {
-  <x-color><param>#268bd2</param>SFR</x-color>* <x-color><param>#6c71c4</param>tris</x-color>;
-  <x-color><param>#268bd2</param>SFR</x-color>* <x-color><param>#6c71c4</param>ansel</x-color>;
-  <x-color><param>#268bd2</param>SFR</x-color>* <x-color><param>#6c71c4</param>port</x-color>;
-  <x-color><param>#268bd2</param>SFR</x-color>* <x-color><param>#6c71c4</param>lat</x-color>;
-  <x-color><param>#268bd2</param>SFR</x-color>* <x-color><param>#6c71c4</param>odc</x-color>;
-  <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color>* <x-color><param>#6c71c4</param>fake_cnen</x-color>;
-  <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color>* <x-color><param>#6c71c4</param>cn_backup</x-color>;
-  <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color>* <x-color><param>#6c71c4</param>cn_force</x-color>;
-  <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pos_mask</x-color>;
-  <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>neg_mask</x-color>;
-  <x-color><param>#268bd2</param>PORT</x-color> <x-color><param>#6c71c4</param>name</x-color>;
-  <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>nbit</x-color>;
-} <x-color><param>#268bd2</param>PORT_INFO</x-color>;
-
-
-<x-color><param>olive drab</param>#define</x-color> <x-color><param>#b58900</param>MAKE_PORT_INFO</x-color>(<x-color><param>#6c71c4</param>port</x-color>, <x-color><param>#6c71c4</param>num</x-color>) {             \
+#define MAKE_PORT_INFO(port, num) {             \
     &TRIS##port,                                \
       &ANS##port,                               \
       &PORT##port,                              \
@@ -92,111 +79,93 @@ Text-Width: 70
       &CNEN##port,                              \
       &CNBACKUP##port,                          \
       &CNFORCE##port,                           \
-      (1 <<<< num),                               \
-      ~(1 <<<< num),                              \
+      (1 << num),                               \
+      ~(1 << num),                              \
       PORT_##port,                              \
       num                                       \
       }
 
-<x-color><param>#859900</param>typedef</x-color> <x-color><param>#859900</param>struct</x-color> {
-  <x-color><param>#268bd2</param>SFR</x-color> *<x-color><param>#6c71c4</param>cnen</x-color>;
-  <x-color><param>#268bd2</param>SFR</x-color> *<x-color><param>#6c71c4</param>cnpu</x-color>;
-  <x-color><param>#268bd2</param>SFR</x-color> *<x-color><param>#6c71c4</param>cnpd</x-color>;
-  <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pos_mask</x-color>;
-  <x-color><param>#268bd2</param>unsigned</x-color> <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>neg_mask</x-color>;
-} <x-color><param>#268bd2</param>CN_INFO</x-color>;
+typedef struct {
+  SFR *cnen;
+  SFR *cnpu;
+  SFR *cnpd;
+  unsigned int pos_mask;
+  unsigned int neg_mask;
+} CN_INFO;
 
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetTris</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>val</x-color>) {
+void PinSetTris(int pin, int val) {
 }
 
-
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetAnsel</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>val</x-color>) {
+void PinSetAnsel(int pin, int val) {
 }
 
-
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetLat</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>val</x-color>) {
+void PinSetLat(int pin, int val) {
 }
 
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinGetPort</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0;
+int PinGetPort(int pin) {
+  return 0;
+}
+void PinSetOdc(int pin, int val) {
 }
 
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetOdc</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>val</x-color>) {
+void PinSetCnen(int pin, int cnen) {
 }
 
-
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetCnen</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>cnen</x-color>) {
+void PinSetCnforce(int pin) {
 }
 
-
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetCnforce</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>) {
+void PinSetCnpu(int pin, int cnpu) {
 }
 
-
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetCnpu</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>cnpu</x-color>) {
+void PinSetCnpd(int pin, int cnpd) {
 }
 
-
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetCnpd</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>cnpd</x-color>) {
+void PinSetRpor(int pin, int per) {
 }
 
+int PinFromPortB(int bit) {
+  return 0; // port_to_pin[0][bit];
+};
 
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinSetRpor</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>per</x-color>) {
+int PinFromPortC(int bit) {
+  return 0; // port_to_pin[1][bit];
+};
+
+int PinFromPortD(int bit) {
+  return 0; // port_to_pin[2][bit];
+};
+
+int PinFromPortE(int bit) {
+  return 0; // port_to_pin[3][bit];
+};
+
+int PinFromPortF(int bit) {
+  return 0; // port_to_pin[4][bit];
+};
+
+int PinFromPortG(int bit) {
+  return 0; // port_to_pin[5][bit];
+};
+
+int PinFromAnalogChannel(int ch) {
+  return 0; // analog_to_pin[ch];
 }
 
+int PinToAnalogChannel(int pin) {
+  // if (pin < MIN_ANALOG_PIN
+  //     || pin - MIN_ANALOG_PIN >= ARRAY_SIZE(pin_to_analog)) {
+  //   return -1;
+  // }
+  return 0; // pin_to_analog[pin - MIN_ANALOG_PIN];
+}
 
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinFromPortB</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>bit</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>port_to_pin[0][bit];
-</x-color></italic>};
+int PinToRpin(int pin) {
+  return 0; // pin_to_rpin[pin];
+}
 
+void PinToPortBit(int pin, PORT *port, int *nbit) {
+  // const PORT_INFO* info = &port_info[pin];
+  // *port = info->name;
+  // *nbit = info->nbit;
+}
 
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinFromPortC</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>bit</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>port_to_pin[1][bit];
-</x-color></italic>};
-
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinFromPortD</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>bit</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>port_to_pin[2][bit];
-</x-color></italic>};
-
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinFromPortE</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>bit</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>port_to_pin[3][bit];
-</x-color></italic>};
-
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinFromPortF</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>bit</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>port_to_pin[4][bit];
-</x-color></italic>};
-
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinFromPortG</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>bit</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>port_to_pin[5][bit];
-</x-color></italic>};
-
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinFromAnalogChannel</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>ch</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>analog_to_pin[ch];
-</x-color></italic>}
-
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinToAnalogChannel</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>) {
-  <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>if (pin << MIN_ANALOG_PIN
-</x-color></italic>  <italic><x-color><param>#586e75</param>//     </x-color></italic><italic><x-color><param>#586e75</param>|| pin - MIN_ANALOG_PIN >= ARRAY_SIZE(pin_to_analog)) {
-</x-color></italic>  <italic><x-color><param>#586e75</param>//   </x-color></italic><italic><x-color><param>#586e75</param>return -1;
-</x-color></italic>  <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>}
-</x-color></italic>  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>pin_to_analog[pin - MIN_ANALOG_PIN];
-</x-color></italic>}
-
-
-<x-color><param>#268bd2</param>int</x-color> <x-color><param>#b58900</param>PinToRpin</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>) {
-  <x-color><param>#859900</param>return</x-color> 0; <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>pin_to_rpin[pin];
-</x-color></italic>}
-
-
-<x-color><param>#268bd2</param>void</x-color> <x-color><param>#b58900</param>PinToPortBit</x-color>(<x-color><param>#268bd2</param>int</x-color> <x-color><param>#6c71c4</param>pin</x-color>, <x-color><param>#268bd2</param>PORT</x-color> *<x-color><param>#6c71c4</param>port</x-color>, <x-color><param>#268bd2</param>int</x-color> *<x-color><param>#6c71c4</param>nbit</x-color>) {
-  <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>const PORT_INFO* info = &port_info[pin];
-</x-color></italic>  <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>*port = info->name;
-</x-color></italic>  <italic><x-color><param>#586e75</param>// </x-color></italic><italic><x-color><param>#586e75</param>*nbit = info->nbit;
-</x-color></italic>}

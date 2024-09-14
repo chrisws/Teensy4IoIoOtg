@@ -52,7 +52,7 @@ void SequencerTasks() {
   }
 }
 
-bool SequencerCommand(SEQ_CMD cmd, uint8_t const * extra) {
+bool SequencerCommand(SEQ_CMD cmd, uint8_t const *extra) {
   switch (cmd) {
   case SEQ_CMD_STOP:         return SequencerStop();
   case SEQ_CMD_START:        return SequencerStart();

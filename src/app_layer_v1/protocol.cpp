@@ -48,9 +48,9 @@
 #include "incap.h"
 #include "sequencer_protocol.h"
 
-#define CHECK(cond) do { if (!(cond)) { log_printf("Check failed: %s", #cond); return FALSE; }} while(0)
+#define CHECK(cond) do { if (!(cond)) { log_printf("Check failed: %s", #cond); return false; }} while(0)
 
-const BYTE incoming_arg_size[MESSAGE_TYPE_LIMIT] = {
+const uint8_t incoming_arg_size[MESSAGE_TYPE_LIMIT] = {
   sizeof(HARD_RESET_ARGS),
   sizeof(SOFT_RESET_ARGS),
   sizeof(CHECK_INTERFACE_ARGS),
@@ -92,7 +92,7 @@ const BYTE incoming_arg_size[MESSAGE_TYPE_LIMIT] = {
   // Array is indexed by message type enum.
 };
 
-const BYTE outgoing_arg_size[MESSAGE_TYPE_LIMIT] = {
+const uint8_t outgoing_arg_size[MESSAGE_TYPE_LIMIT] = {
   sizeof(ESTABLISH_CONNECTION_ARGS),
   sizeof(SOFT_RESET_ARGS),
   sizeof(CHECK_INTERFACE_RESPONSE_ARGS),
@@ -142,11 +142,7 @@ typedef enum {
 
 // Not enough RAM in the 24K RAM (old prototypes) platforms, since the
 // introduction of the motion control library.
-#ifdef __PIC24FJ128DA106__
-#define QUEUE_SIZE 4096
-#else
 #define QUEUE_SIZE 8192
-#endif
 
 DEFINE_STATIC_BYTE_QUEUE(tx_queue, QUEUE_SIZE);
 static int bytes_out;
@@ -164,11 +160,11 @@ static int rx_buffer_cursor;
 static int rx_message_remaining;
 static RX_MESSAGE_STATE rx_message_state;
 
-static inline BYTE OutgoingMessageLength(const OUTGOING_MESSAGE* msg) {
+static inline uint8_t OutgoingMessageLength(const OUTGOING_MESSAGE *msg) {
   return 1 + outgoing_arg_size[msg->type];
 }
 
-static inline BYTE IncomingVarArgSize(const INCOMING_MESSAGE* msg) {
+static inline uint8_t IncomingVarArgSize(const INCOMING_MESSAGE *msg) {
   switch (msg->type) {
   case UART_DATA:
     return msg->args.uart_data.size + 1;
@@ -203,7 +199,6 @@ static inline BYTE IncomingVarArgSize(const INCOMING_MESSAGE* msg) {
 }
 
 void AppProtocolInit(CHANNEL_HANDLE h) {
-  _prog_addressT p;
   bytes_out = 0;
   rx_buffer_cursor = 0;
   rx_message_remaining = 1;
@@ -216,37 +211,34 @@ void AppProtocolInit(CHANNEL_HANDLE h) {
   msg.type = ESTABLISH_CONNECTION;
   msg.args.establish_connection.magic = IOIO_MAGIC;
 
-  _init_prog_address(p, hardware_version);
-  _memcpy_p2d16(msg.args.establish_connection.hw_impl_ver, p, 8);
-  _init_prog_address(p, bootloader_version);
-  _memcpy_p2d16(msg.args.establish_connection.bl_impl_ver, p, 8);
-
+  memcpy(msg.args.establish_connection.hw_impl_ver, HW_IMPL_VER, 8);
+  memcpy(msg.args.establish_connection.bl_impl_ver, BL_IMPL_VER, 8);
   memcpy(msg.args.establish_connection.fw_impl_ver, FW_IMPL_VER, 8);
 
   AppProtocolSendMessage(&msg);
 }
 
-void AppProtocolSendMessage(const OUTGOING_MESSAGE* msg) {
+void AppProtocolSendMessage(const OUTGOING_MESSAGE *msg) {
   if (state != STATE_OPEN) return;
   PRIORITY(1) {
-    ByteQueuePushBuffer(&tx_queue, (const BYTE*) msg, OutgoingMessageLength(msg));
+    ByteQueuePushBuffer(&tx_queue, (const uint8_t *) msg, OutgoingMessageLength(msg));
   }
 }
 
-void AppProtocolSendMessageWithVarArg(const OUTGOING_MESSAGE* msg, const void* data, int size) {
+void AppProtocolSendMessageWithVarArg(const OUTGOING_MESSAGE *msg, const void *data, int size) {
   if (state != STATE_OPEN) return;
   PRIORITY(1) {
-    ByteQueuePushBuffer(&tx_queue, (const BYTE*) msg, OutgoingMessageLength(msg));
+    ByteQueuePushBuffer(&tx_queue, (const uint8_t *) msg, OutgoingMessageLength(msg));
     ByteQueuePushBuffer(&tx_queue, data, size);
   }
 }
 
-void AppProtocolSendMessageWithVarArgSplit(const OUTGOING_MESSAGE* msg,
-                                           const void* data1, int size1,
-                                           const void* data2, int size2) {
+void AppProtocolSendMessageWithVarArgSplit(const OUTGOING_MESSAGE *msg,
+                                           const void *data1, int size1,
+                                           const void *data2, int size2) {
   if (state != STATE_OPEN) return;
   PRIORITY(1) {
-    ByteQueuePushBuffer(&tx_queue, (const BYTE*) msg, OutgoingMessageLength(msg));
+    ByteQueuePushBuffer(&tx_queue, (const uint8_t *) msg, OutgoingMessageLength(msg));
     ByteQueuePushBuffer(&tx_queue, data1, size1);
     ByteQueuePushBuffer(&tx_queue, data2, size2);
   }
@@ -266,7 +258,7 @@ void AppProtocolTasks(CHANNEL_HANDLE h) {
   ICSPTasks();
   SequencerTasks();
   if (ConnectionCanSend(h)) {
-    const BYTE* data;
+    const uint8_t *data;
     if (bytes_out) {
       ByteQueuePull(&tx_queue, bytes_out);
       bytes_out = 0;
@@ -280,10 +272,10 @@ void AppProtocolTasks(CHANNEL_HANDLE h) {
 }
 
 static void Echo() {
-  AppProtocolSendMessage((const OUTGOING_MESSAGE*) &rx_msg);
+  AppProtocolSendMessage((const OUTGOING_MESSAGE *) &rx_msg);
 }
 
-static BOOL MessageDone() {
+static bool MessageDone() {
   // TODO: check pin capabilities
   switch (rx_msg.type) {
   case HARD_RESET:
@@ -383,17 +375,15 @@ static BOOL MessageDone() {
     CHECK(rx_msg.args.spi_master_request.spi_num < NUM_SPI_MODULES);
     CHECK(rx_msg.args.spi_master_request.ss_pin < NUM_PINS);
     {
-      const BYTE total_size = rx_msg.args.spi_master_request.total_size + 1;
-      const BYTE data_size = rx_msg.args.spi_master_request.data_size_neq_total
+      const uint8_t total_size = rx_msg.args.spi_master_request.total_size + 1;
+      const uint8_t data_size = rx_msg.args.spi_master_request.data_size_neq_total
                              ? rx_msg.args.spi_master_request.data_size
                              : total_size;
-      const BYTE res_size = rx_msg.args.spi_master_request.res_size_neq_total
-                            ? rx_msg.args.spi_master_request.vararg[
-                                                                    rx_msg.args.spi_master_request.data_size_neq_total]
+      const uint8_t res_size = rx_msg.args.spi_master_request.res_size_neq_total
+                            ? rx_msg.args.spi_master_request.vararg[rx_msg.args.spi_master_request.data_size_neq_total]
                             : total_size;
-      const BYTE* const data = &rx_msg.args.spi_master_request.vararg[
-                                                                      rx_msg.args.spi_master_request.data_size_neq_total
-                                                                      + rx_msg.args.spi_master_request.res_size_neq_total];
+      const uint8_t *const data = &rx_msg.args.spi_master_request.vararg[rx_msg.args.spi_master_request.data_size_neq_total
+                                                                          + rx_msg.args.spi_master_request.res_size_neq_total];
 
       SPITransmit(rx_msg.args.spi_master_request.spi_num,
                   rx_msg.args.spi_master_request.ss_pin,
@@ -556,28 +546,28 @@ static BOOL MessageDone() {
     // Call Echo() if the message is to be echoed back.
 
   default:
-    return FALSE;
+    return false;
   }
-  return TRUE;
+  return true;
 }
 
-BOOL AppProtocolHandleIncoming(const BYTE* data, UINT32 data_len) {
+bool AppProtocolHandleIncoming(const uint8_t *data, uint32_t data_len) {
   assert(data);
   if (state != STATE_OPEN) {
     log_printf("Shouldn't get data after close!");
-    return FALSE;
+    return false;
   }
 
   while (data_len > 0) {
     // copy a chunk of data to rx_msg
     if (data_len >= rx_message_remaining) {
-      memcpy(((BYTE *) &rx_msg) + rx_buffer_cursor, data, rx_message_remaining);
+      memcpy(((uint8_t *) &rx_msg) + rx_buffer_cursor, data, rx_message_remaining);
       data += rx_message_remaining;
       data_len -= rx_message_remaining;
       rx_buffer_cursor += rx_message_remaining;
       rx_message_remaining = 0;
     } else {
-      memcpy(((BYTE *) &rx_msg) + rx_buffer_cursor, data, data_len);
+      memcpy(((uint8_t *) &rx_msg) + rx_buffer_cursor, data, data_len);
       rx_buffer_cursor += data_len;
       rx_message_remaining -= data_len;
       data_len = 0;
@@ -602,10 +592,10 @@ BOOL AppProtocolHandleIncoming(const BYTE* data, UINT32 data_len) {
         rx_message_state = WAIT_TYPE;
         rx_message_remaining = 1;
         rx_buffer_cursor = 0;
-        if (!MessageDone()) return FALSE;
+        if (!MessageDone()) return false;
         break;
       }
     }
   }
-  return TRUE;
+  return true;
 }

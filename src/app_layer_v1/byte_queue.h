@@ -27,33 +27,46 @@
  * or implied.
  */
 
-// Synchronization utilities.
+// A generic byte queue, used for data buffering.
 
-#ifndef __SYNC_H__
-#define __SYNC_H__
+#ifndef __uint8_tQUEUE_H__
+#define __uint8_tQUEUE_H__
 
 #include <cstdint>
 
-// Disable interrupts at or below a certain level.
-// This is intended to be followed by a statement or a block, within which the
-// masking will apply. Once the block exits, even when jumping out in the middle
-// of it, the masking will be returned to its previous value.
-//
-// Example:
-// PRIORITY(5) {  // disable interrupt with priority <= 5
-//   ... do something critical ...
-// } // return to previous state
+typedef struct {
+  uint8_t *buf;
+  int capacity;
+  int read_cursor;
+  int write_cursor;
+  volatile int size;
+} ByteQueue;
 
-#define PRIORITY(pri)
+#define DEFINE_STATIC_BYTE_QUEUE(name, size)              \
+  static uint8_t name##_buf[size] __attribute__(());      \
+  static ByteQueue name = { name##_buf, size, 0, 0, 0 }
 
-/* for (unsigned _sr __attribute__((cleanup(RestoreSR))) = SR, _i = 1; \ */
-/*      _i && (SR = (pri << 5));                                       \ */
-/*      _i = 0) */
+static inline void ByteQueueClear(ByteQueue *q) {
+  q->size = 0;
+  q->read_cursor = 0;
+  q->write_cursor = 0;
+}
 
-/* // Do not call directly. */
-/* static inline void RestoreSR(unsigned const *sr) { */
-/*   SR = *sr; */
-/* } */
+static inline void ByteQueueInit(ByteQueue *q, uint8_t *buf, int capacity) {
+  q->buf = buf;
+  q->capacity = capacity;
+  ByteQueueClear(q);
+}
 
+void ByteQueuePushBuffer(ByteQueue *q, const void* buf, int len);
+void ByteQueuePeek(ByteQueue *q, const uint8_t **data, int* size);
+void ByteQueuePeekMax(ByteQueue *q, int max_size, const uint8_t **data1, int* size1, const uint8_t **data2, int *size2);
+void ByteQueuePull(ByteQueue *q, int size);
+void ByteQueuePullToBuffer(ByteQueue *q, void *buffer, int size);
+void ByteQueuePushByte(ByteQueue *q, uint8_t b);
+uint8_t ByteQueuePullByte(ByteQueue *q);
 
-#endif  // __SYNC_H__
+static inline int ByteQueueSize(ByteQueue *q) { return q->size; }
+static inline int ByteQueueRemaining(ByteQueue *q) { return q->capacity - q->size; }
+
+#endif  // __uint8_tQUEUE_H__

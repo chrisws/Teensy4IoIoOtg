@@ -32,7 +32,6 @@
 #include <assert.h>
 
 #include "spi.h"
-#include "atomic.h"
 #include "byte_queue.h"
 #include "field_accessors.h"
 #include "platform.h"
@@ -56,32 +55,32 @@ typedef enum {
 typedef struct {
   PACKET_STATE packet_state;
   volatile int num_tx_since_last_report;
-  BYTE cur_msg_dest;
-  BYTE cur_msg_total_tx;  // total number of bytes left to send
-  BYTE cur_msg_data_tx;   // number of *non-garbage* bytes left to send
-  BYTE cur_msg_trim_rx;   // number of *garbage* bytes left to read
-  BYTE cur_msg_total_rx;  // number of total bytes left to read
-  BYTE cur_msg_rx_size;   // number of bytes to send back
-  BYTE can_send;          // number of bytes available in the FIFO
+  uint8_t cur_msg_dest;
+  uint8_t cur_msg_total_tx;  // total number of bytes left to send
+  uint8_t cur_msg_data_tx;   // number of *non-garbage* bytes left to send
+  uint8_t cur_msg_trim_rx;   // number of *garbage* bytes left to read
+  uint8_t cur_msg_total_rx;  // number of total bytes left to read
+  uint8_t cur_msg_rx_size;   // number of bytes to send back
+  uint8_t can_send;          // number of bytes available in the FIFO
 
   // message format:
-  // BYTE dest
-  // BYTE tx_size
-  // BYTE tx_data[tx_size]
-  BYTE_QUEUE rx_queue;
+  // uint8_t dest
+  // uint8_t tx_size
+  // uint8_t tx_data[tx_size]
+  ByteQueue rx_queue;
 
   volatile int num_messages_rx_queue;
 
   // message format:
-  // BYTE dest
-  // BYTE total_size
-  // BYTE data_size
-  // BYTE rx_trim
-  // BYTE tx_data[tx_size]
-  BYTE_QUEUE tx_queue;
+  // uint8_t dest
+  // uint8_t total_size
+  // uint8_t data_size
+  // uint8_t rx_trim
+  // uint8_t tx_data[tx_size]
+  ByteQueue tx_queue;
 
-  BYTE rx_buffer[RX_BUF_SIZE];
-  BYTE tx_buffer[TX_BUF_SIZE];
+  uint8_t rx_buffer[RX_BUF_SIZE];
+  uint8_t tx_buffer[TX_BUF_SIZE];
 } SPI_STATE;
 
 static SPI_STATE spis[NUM_SPI_MODULES];
@@ -167,7 +166,7 @@ void SPIConfigMaster(int spi_num, int scale, int div, int smp_end, int clk_edge,
 
 static void SPIReportTxStatus(int spi_num) {
   int report;
-  SPI_STATE* spi = &spis[spi_num];
+  SPI_STATE *spi = &spis[spi_num];
   PRIORITY(INT_PRIORITY) {
     report = spi->num_tx_since_last_report;
     spi->num_tx_since_last_report = 0;
@@ -183,9 +182,9 @@ void SPITasks() {
   int i;
   for (i = 0; i < NUM_SPI_MODULES; ++i) {
     int size1, size2, size;
-    const BYTE *data1, *data2;
-    SPI_STATE* spi = &spis[i];
-    BYTE_QUEUE* q = &spi->rx_queue;
+    const uint8_t *data1, *data2;
+    SPI_STATE *spi = &spis[i];
+    ByteQueue *q = &spi->rx_queue;
     while (spi->num_messages_rx_queue) {
       OUTGOING_MESSAGE msg;
       msg.type = SPI_DATA;
@@ -210,8 +209,8 @@ void SPITasks() {
 static void SPIInterrupt(int spi_num) {
   volatile SPIREG* reg = spi_reg[spi_num];
   SPI_STATE* spi = &spis[spi_num];
-  BYTE_QUEUE* tx_queue = &spi->tx_queue;
-  BYTE_QUEUE* rx_queue = &spi->rx_queue;
+  ByteQueue *tx_queue = &spi->tx_queue;
+  ByteQueue *rx_queue = &spi->rx_queue;
   int bytes_to_write;
 
   // packet initialiation if needed
@@ -244,7 +243,7 @@ static void SPIInterrupt(int spi_num) {
   } else {
     // read as much incoming data as possible into rx_queue
     while (!(reg->spixstat & (1 << 5))) {
-      BYTE rx_byte = reg->spixbuf;
+      uint8_t rx_byte = reg->spixbuf;
       if (spi->cur_msg_trim_rx) {
         --spi->cur_msg_trim_rx;
       } else {
@@ -269,7 +268,7 @@ static void SPIInterrupt(int spi_num) {
       bytes_to_write = spi->can_send;
     }
     while (bytes_to_write-- > 0) {
-      BYTE tx_byte = 0xFF;
+      uint8_t tx_byte = 0xFF;
       if (spi->cur_msg_data_tx) {
         tx_byte = ByteQueuePullByte(tx_queue);
         --spi->cur_msg_data_tx;
@@ -295,7 +294,7 @@ static void SPIInterrupt(int spi_num) {
 
 void SPITransmit(int spi_num, int dest, const void* data, int data_size,
                  int total_size, int trim_rx) {
-  BYTE_QUEUE* q = &spis[spi_num].tx_queue;
+  ByteQueue *q = &spis[spi_num].tx_queue;
   PRIORITY(INT_PRIORITY) {
     ByteQueuePushByte(q, dest);
     ByteQueuePushByte(q, total_size);

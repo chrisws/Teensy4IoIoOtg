@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,6 +26,7 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 // IOIO application layer protocol implementation.
@@ -44,11 +46,13 @@
 #ifndef __PROTOCOL_H__
 #define __PROTOCOL_H__
 
-#include "libconn/connection.h"
+#include "connection.h"
 #include "protocol_defs.h"
 
 // Human-readable string describing app firmware version.
-#define FW_IMPL_VER "IOIO0506"
+#define FW_IMPL_VER "IOIOT4001"
+#define BL_IMPL_VER "IOIOT4001"
+#define HW_IMPL_VER "IOIOT4001"
 
 // Initialize this module.
 // This function completely resets the module's state and can be called even
@@ -64,7 +68,7 @@ void AppProtocolTasks(CHANNEL_HANDLE h);
 
 // Process incoming protocol data.
 // data may not be NULL.
-BOOL AppProtocolHandleIncoming(const BYTE* data, UINT32 data_len);
+bool AppProtocolHandleIncoming(const uint8_t* data, uint32_t data_len);
 
 // Send a protocol message.
 // This is not intended for usage of the bootstrap code that glues the protocol
