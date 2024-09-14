@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,11 +26,10 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 #include "timers.h"
-
-#include "Compiler.h"
 #include "logging.h"
 #include "sync.h"
 
@@ -46,21 +46,21 @@ void TimersInit() {
   // takes the ISR to process a sequencer cue, we're at 256 cycles, meaning all
   // timers are immediately incremented.
 
-  T2CON = 0x8030;  // timer 2 is sysclk / 256 = 62.5KHz
-  T3CON = 0x8010;  // timer 3 is sysclk / 8 = 2MHz
-  T4CON = 0x8020;  // timer 4 is sysclk / 64 = 250KHz
-  T5CON = 0x8030;  // timer 5 is sysclk / 256 = 62.5KHz
+  // T2CON = 0x8030;  // timer 2 is sysclk / 256 = 62.5KHz
+  // T3CON = 0x8010;  // timer 3 is sysclk / 8 = 2MHz
+  // T4CON = 0x8020;  // timer 4 is sysclk / 64 = 250KHz
+  // T5CON = 0x8030;  // timer 5 is sysclk / 256 = 62.5KHz
 
-  PRIORITY(7) {
-    asm("clr _TMR4\n"
-        "repeat #53\n"
-        "nop\n"
-        "clr _TMR3\n"
-        "repeat #5\n"
-        "nop\n"
-        "clr _TMR5\n"
-        "repeat #43\n"
-        "nop\n"
-        "clr _TMR2\n");
-  }
+  // PRIORITY(7) {
+  //   asm("clr _TMR4\n"
+  //       "repeat #53\n"
+  //       "nop\n"
+  //       "clr _TMR3\n"
+  //       "repeat #5\n"
+  //       "nop\n"
+  //       "clr _TMR5\n"
+  //       "repeat #43\n"
+  //       "nop\n"
+  //       "clr _TMR2\n");
+  // }
 }

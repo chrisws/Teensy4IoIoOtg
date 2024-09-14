@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,6 +26,7 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 // Here's the deal:
@@ -48,9 +50,11 @@
 // interrupt priority directly to 1. Then we handle the interrupt the same as
 // we handle the trailing edge of the first case.
 
-#include "incap.h"
+#include <cstdint>
 
-#include <assert.h>
+#include "incap.h"
+#include "platform.h"
+#include "logging.h"
 
 #define LEADING_PRIORITY 6
 #define TRAILING_PRIORITY 1
@@ -61,8 +65,6 @@ typedef struct {
   volatile unsigned int buf;
   volatile unsigned int tmr;
 } INCAP_REG;
-
-static INCAP_REG* incap_regs = (INCAP_REG *) & IC1CON1;
 
 typedef enum {
   LEADING = 0,
@@ -75,7 +77,7 @@ static EDGE_STATE edge_states[NUM_INCAP_MODULES];
 
 // For each module: the value that needs to be written to con1 in order to
 // enable the module in the right mode.
-static WORD con1_vals[NUM_INCAP_MODULES];
+static uint16_t con1_vals[NUM_INCAP_MODULES];
 
 // For each module, if true, edge type will be flipped on every interrupt.
 // This is used for measuring pulses, as opposed to period.
@@ -102,18 +104,6 @@ static void InCapConfigInternal(int incap_num, int double_prec, int mode, int cl
 void InCapConfig(int incap_num, int double_prec, int mode, int clock) {
   log_printf("InCapConfig(%d, %d, %d, %d)", incap_num, double_prec, mode, clock);
   InCapConfigInternal(incap_num, double_prec, mode, clock, 1);
-}
-
-inline static int NumBytes16(WORD val) {
-  return val > 0xFF ? 2 : 1;
-}
-
-inline static int NumBytes32(DWORD val) {
-  if (((DWORD_VAL) val).word.HW) {
-    return 2 + NumBytes16(((DWORD_VAL) val).word.HW);
-  } else {
-    return NumBytes16(((DWORD_VAL) val).word.LW);
-  }
 }
 
 inline static void ReportCapture(int incap_num, int double_prec) {

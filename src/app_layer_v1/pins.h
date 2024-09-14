@@ -53,8 +53,6 @@ extern unsigned int CNFORCEE;
 extern unsigned int CNFORCEF;
 extern unsigned int CNFORCEG;
 
-// TODO: pin capabilities
-
 void PinSetTris(int pin, int val);
 void PinSetAnsel(int pin, int val);
 void PinSetLat(int pin, int val);
@@ -66,17 +64,14 @@ void PinSetCnpu(int pin, int cnpu);
 void PinSetCnpd(int pin, int cnpd);
 void PinSetRpor(int pin, int per);
 int PinToRpin(int pin);
-
 int PinFromPortB(int bit);
 int PinFromPortC(int bit);
 int PinFromPortD(int bit);
 int PinFromPortE(int bit);
 int PinFromPortF(int bit);
 int PinFromPortG(int bit);
-
 int PinToAnalogChannel(int pin);
 int PinFromAnalogChannel(int ch);
-
 void PinToPortBit(int pin, PORT *port, int *nbit);
 
 #endif  // __PINS_H__

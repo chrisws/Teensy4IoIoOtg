@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,11 +26,12 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
-#include "spi.h"
-
 #include <assert.h>
+
+#include "spi.h"
 #include "atomic.h"
 #include "byte_queue.h"
 #include "field_accessors.h"
@@ -141,14 +143,14 @@ static void SPIConfigMasterInternal(int spi_num, int scale, int div,
     }
     spi->num_tx_since_last_report = TX_BUF_SIZE;
     regs->spixcon1 = (smp_end << 9)
-        | (clk_edge << 8)
-        | (clk_pol << 6)
-        | (1 << 5)  // master
-        | ((7 - div) << 2)
-        | ((3 - scale));
+                     | (clk_edge << 8)
+                     | (clk_pol << 6)
+                     | (1 << 5)  // master
+                     | ((7 - div) << 2)
+                     | ((3 - scale));
     regs->spixcon2 = 0x0001; // enhanced buffer mode
     regs->spixstat = (1 << 15) // enable
-        | (1 << 2);  // int. when RX FIFO is non-empty
+                     | (1 << 2);  // int. when RX FIFO is non-empty
     // Set int. flag, so int. will occur as soon as data is written
     AssignSPIxIF(spi_num, 1);
   } else {
@@ -304,17 +306,17 @@ void SPITransmit(int spi_num, int dest, const void* data, int data_size,
   }
 }
 
-#define DEFINE_INTERRUPT_HANDLERS(spi_num)                                   \
- void __attribute__((__interrupt__, auto_psv)) _SPI##spi_num##Interrupt() {  \
-   SPIInterrupt(spi_num - 1);                                                \
- }
+#define DEFINE_INTERRUPT_HANDLERS(spi_num)                              \
+  void __attribute__((__interrupt__, auto_psv)) _SPI##spi_num##Interrupt() { \
+    SPIInterrupt(spi_num - 1);                                          \
+  }
 
 #if NUM_SPI_MODULES > 3
-  #error Currently only devices with 3 or less SPIs are supported. Please fix below.
+#error Currently only devices with 3 or less SPIs are supported. Please fix below.
 #endif
 
 #if NUM_SPI_MODULES >= 1
-  DEFINE_INTERRUPT_HANDLERS(1)
+DEFINE_INTERRUPT_HANDLERS(1)
 #endif
 
 #if NUM_SPI_MODULES >= 2

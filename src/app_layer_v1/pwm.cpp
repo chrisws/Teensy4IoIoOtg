@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,11 +26,10 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 #include "pwm.h"
-
-#include "Compiler.h"
 #include "logging.h"
 #include "platform.h"
 
@@ -44,15 +44,14 @@ typedef struct {
 #define OC_REG(num) (((volatile OC_REGS *) &OC1CON1) + num)
 
 void PWMInit() {
-  int i;
   // disable PWMs
-  for (i = 0; i < NUM_PWM_MODULES; ++i) {
+  for (int i = 0; i < NUM_PWM_MODULES; ++i) {
     SetPwmPeriod(i, 0, 0);
   }
 }
 
 void SetPwmDutyCycle(int pwm_num, int dc, int fraction) {
-  volatile OC_REGS* regs;
+  volatile OC_REGS *regs;
   log_printf("SetPwmDutyCycle(%d, %d, %d)", pwm_num, dc, fraction);
   regs = OC_REG(pwm_num);
   regs->con2 &= ~0x0600;

@@ -1,6 +1,7 @@
 /*
- * Copyright 2013 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,6 +26,7 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 #include "sequencer_protocol.h"
@@ -52,11 +54,11 @@ void SequencerTasks() {
 
 bool SequencerCommand(SEQ_CMD cmd, uint8_t const * extra) {
   switch (cmd) {
-    case SEQ_CMD_STOP:         return SequencerStop();
-    case SEQ_CMD_START:        return SequencerStart();
-    case SEQ_CMD_PAUSE:        return SequencerPause();
-    case SEQ_CMD_MANUAL_START: return SequencerManualCue(extra);
-    case SEQ_CMD_MANUAL_STOP:  return SequencerManualStop();
-    default:                   return false;
+  case SEQ_CMD_STOP:         return SequencerStop();
+  case SEQ_CMD_START:        return SequencerStart();
+  case SEQ_CMD_PAUSE:        return SequencerPause();
+  case SEQ_CMD_MANUAL_START: return SequencerManualCue(extra);
+  case SEQ_CMD_MANUAL_STOP:  return SequencerManualStop();
+  default:                   return false;
   }
 }

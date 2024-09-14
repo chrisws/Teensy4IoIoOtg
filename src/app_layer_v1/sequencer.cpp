@@ -1,6 +1,7 @@
 /*
- * Copyright 2013 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,16 +26,14 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
+#include <cassert>
+#include <ctdbool>
+#include <cstring>
+
 #include "sequencer.h"
-
-#include <assert.h>
-#include <stdbool.h>
-#include <string.h>
-#include <p24Fxxxx.h>
-#include <libpic30.h>
-
 #include "logging.h"
 #include "platform.h"
 #include "sequence.h"
@@ -43,8 +42,6 @@
 #include "sync.h"
 
 #define INT_PRIORITY 7
-
-////////////////////////////////////////////////////////////////////////////////
 
 static QUEUE(uint8_t, 16) event_queue;
 
@@ -83,7 +80,7 @@ static void PrintCue(Cue const *cue, uint16_t oc_enabled) {
     }
   }
   for (i = 0; i < ARRAY_LEN(cue->port); ++i) {
-      printf("P%d { &0x%x |0x%x } ", i, cue->port[i].and, cue->port[i].or);
+    printf("P%d { &0x%x |0x%x } ", i, cue->port[i].and, cue->port[i].or);
   }
   printf("\n");
 }
@@ -105,7 +102,7 @@ static void PrintSequence(Sequence const *seq) {
   size_t i;
   for (i = 0; i < SequenceSize(seq); ++i) {
     TimedCue const * const timed_cue =
-        &seq->buf[(seq->read_count + i) % SEQUENCE_LENGTH];
+      &seq->buf[(seq->read_count + i) % SEQUENCE_LENGTH];
     printf("Duration = %d\n", timed_cue->time);
     PrintCue(&timed_cue->cue);
   }
@@ -174,11 +171,11 @@ static size_t num_active_channels;
 static bool ConvertClock(ClockSource clk, uint16_t *result) {
   assert(result);
   switch (clk) {
-    case CLK_16M:  *result = 0b111; return true;
-    case CLK_2M :  *result = 0b001; return true;
-    case CLK_250K: *result = 0b010; return true;
-    case CLK_62K5: *result = 0b011; return true;
-    default:                        return false;
+  case CLK_16M:  *result = 0b111; return true;
+  case CLK_2M :  *result = 0b001; return true;
+  case CLK_250K: *result = 0b010; return true;
+  case CLK_62K5: *result = 0b011; return true;
+  default:                        return false;
   }
 }
 
@@ -206,7 +203,7 @@ static int TranslateSettings(uint8_t const * data,
   assert(result);
   assert(config);
   assert(cue_size);
-  
+
   ChannelSettings const *settings = (ChannelSettings const *) data;
   uint16_t cclk = 0;
   result->type = settings->type;
@@ -214,77 +211,77 @@ static int TranslateSettings(uint8_t const * data,
   // Set the channel settings.
   log_printf("TranslateSettings, type=%d", settings->type);
   switch (settings->type) {
-    case CHANNEL_TYPE_PWM_POSITION:
-    case CHANNEL_TYPE_PWM_SPEED:
-      if (max_size < 1 + sizeof(ChannelSettingsPwm)) return -1;
-      if (settings->pwm.oc_num >= NUM_PWM_MODULES) return -1;
-      if (!settings->pwm.period) return -1;
-      if (!ConvertClock(settings->pwm.clk, &cclk)) return -1;
-      result->pwm.oc_num = settings->pwm.oc_num;
-      result->pwm.rs = settings->pwm.period;
-      result->pwm.con1 = (cclk << 10) | 0b110;
-      config->oc_enabled |= 1 << settings->pwm.oc_num;
-      if (settings->type == CHANNEL_TYPE_PWM_SPEED) {
-        config->oc_idle_change |= 1 << settings->pwm.oc_num;
+  case CHANNEL_TYPE_PWM_POSITION:
+  case CHANNEL_TYPE_PWM_SPEED:
+    if (max_size < 1 + sizeof(ChannelSettingsPwm)) return -1;
+    if (settings->pwm.oc_num >= NUM_PWM_MODULES) return -1;
+    if (!settings->pwm.period) return -1;
+    if (!ConvertClock(settings->pwm.clk, &cclk)) return -1;
+    result->pwm.oc_num = settings->pwm.oc_num;
+    result->pwm.rs = settings->pwm.period;
+    result->pwm.con1 = (cclk << 10) | 0b110;
+    config->oc_enabled |= 1 << settings->pwm.oc_num;
+    if (settings->type == CHANNEL_TYPE_PWM_SPEED) {
+      config->oc_idle_change |= 1 << settings->pwm.oc_num;
+    }
+    // In position mode, the idle queue is just used for initialization.
+    // In speed-mode the idle cue is used for freezing too.
+    config->idle_cue.oc[settings->pwm.oc_num].r = settings->pwm.init_pw;
+    config->idle_cue.oc[settings->pwm.oc_num].rs = settings->pwm.period;
+    config->idle_cue.oc[settings->pwm.oc_num].con1 = result->pwm.con1;
+
+    *cue_size = sizeof(ChannelCuePwm);
+    return 1 + sizeof(ChannelSettingsPwm);
+
+  case CHANNEL_TYPE_FM_SPEED:
+    if (max_size < 1 + sizeof(ChannelSettingsFm)) return -1;
+    if (settings->fm.oc_num >= NUM_PWM_MODULES) return -1;
+    if (!settings->fm.pw) return -1;
+    if (!ConvertClock(settings->fm.clk, &cclk)) return -1;
+    result->fm.oc_num = settings->fm.oc_num;
+    result->fm.r = settings->fm.pw;
+    result->fm.con1 = (cclk << 10) | 0b110;
+    config->oc_enabled |= 1 << settings->fm.oc_num;
+    config->oc_idle_change |= 1 << settings->fm.oc_num;
+
+    config->idle_cue.oc[settings->fm.oc_num].r = 0;
+    config->idle_cue.oc[settings->fm.oc_num].rs = 1;
+    config->idle_cue.oc[settings->fm.oc_num].con1 = result->fm.con1;
+
+    *cue_size = sizeof(ChannelCueFm);
+    return 1 + sizeof(ChannelSettingsFm);
+
+  case CHANNEL_TYPE_STEPS:
+    if (max_size < 1 + sizeof(ChannelSettingsSteps)) return -1;
+    if (settings->pwm.oc_num >= NUM_PWM_MODULES) return -1;
+    result->pwm.oc_num = settings->pwm.oc_num;
+    config->oc_enabled |= 1 << settings->pwm.oc_num;
+    config->oc_discrete |= 1 << settings->pwm.oc_num;
+
+    *cue_size = sizeof(ChannelCueSteps);
+    return 1 + sizeof(ChannelSettingsSteps);
+
+  case CHANNEL_TYPE_BINARY:
+    if (max_size < 1 + sizeof(ChannelSettingsBinary)) return -1;
+    if (settings->binary.pin > NUM_PINS) return -1;
+    int nbit;
+    PORT port;
+    PinToPortBit(settings->binary.pin, &port, &nbit);
+    result->binary.port = port;
+    result->binary.nbit = nbit;
+    if (settings->binary.init_when_idle) {
+      if (settings->binary.init) {
+        config->idle_cue.port[port].or |= 1 << nbit;
+      } else {
+        config->idle_cue.port[port].and &= ~(1 << nbit);
       }
-      // In position mode, the idle queue is just used for initialization.
-      // In speed-mode the idle cue is used for freezing too.
-      config->idle_cue.oc[settings->pwm.oc_num].r = settings->pwm.init_pw;
-      config->idle_cue.oc[settings->pwm.oc_num].rs = settings->pwm.period;
-      config->idle_cue.oc[settings->pwm.oc_num].con1 = result->pwm.con1;
+    }
 
-      *cue_size = sizeof(ChannelCuePwm);
-      return 1 + sizeof(ChannelSettingsPwm);
+    *cue_size = sizeof(ChannelCueBinary);
+    return 1 + sizeof(ChannelSettingsBinary);
 
-    case CHANNEL_TYPE_FM_SPEED:
-      if (max_size < 1 + sizeof(ChannelSettingsFm)) return -1;
-      if (settings->fm.oc_num >= NUM_PWM_MODULES) return -1;
-      if (!settings->fm.pw) return -1;
-      if (!ConvertClock(settings->fm.clk, &cclk)) return -1;
-      result->fm.oc_num = settings->fm.oc_num;
-      result->fm.r = settings->fm.pw;
-      result->fm.con1 = (cclk << 10) | 0b110;
-      config->oc_enabled |= 1 << settings->fm.oc_num;
-      config->oc_idle_change |= 1 << settings->fm.oc_num;
-
-      config->idle_cue.oc[settings->fm.oc_num].r = 0;
-      config->idle_cue.oc[settings->fm.oc_num].rs = 1;
-      config->idle_cue.oc[settings->fm.oc_num].con1 = result->fm.con1;
-
-      *cue_size = sizeof(ChannelCueFm);
-      return 1 + sizeof(ChannelSettingsFm);
-
-    case CHANNEL_TYPE_STEPS:
-      if (max_size < 1 + sizeof(ChannelSettingsSteps)) return -1;
-      if (settings->pwm.oc_num >= NUM_PWM_MODULES) return -1;
-      result->pwm.oc_num = settings->pwm.oc_num;
-      config->oc_enabled |= 1 << settings->pwm.oc_num;
-      config->oc_discrete |= 1 << settings->pwm.oc_num;
-
-      *cue_size = sizeof(ChannelCueSteps);
-      return 1 + sizeof(ChannelSettingsSteps);
-
-    case CHANNEL_TYPE_BINARY:
-      if (max_size < 1 + sizeof(ChannelSettingsBinary)) return -1;
-      if (settings->binary.pin > NUM_PINS) return -1;
-      int nbit;
-      PORT port;
-      PinToPortBit(settings->binary.pin, &port, &nbit);
-      result->binary.port = port;
-      result->binary.nbit = nbit;
-      if (settings->binary.init_when_idle) {
-        if (settings->binary.init) {
-          config->idle_cue.port[port].or |= 1 << nbit;
-        } else {
-          config->idle_cue.port[port].and &= ~(1 << nbit);
-        }
-      }
-
-      *cue_size = sizeof(ChannelCueBinary);
-      return 1 + sizeof(ChannelSettingsBinary);
-
-    default:
-      return -1;
+  default:
+    return -1;
   }
 }
 
@@ -322,61 +319,61 @@ bool TranslateCue(uint8_t const *data, Cue *result) {
     ChannelCue const *cue = (ChannelCue const *) data;
 
     switch (channel_settings[i].type) {
-      case CHANNEL_TYPE_PWM_POSITION:
-      case CHANNEL_TYPE_PWM_SPEED:
-        {
-          OCCue * const oc = &result->oc[channel_settings[i].pwm.oc_num];
-          oc->con1 = channel_settings[i].pwm.con1;
-          oc->rs   = channel_settings[i].pwm.rs;
-          oc->r    = cue->pwm.pw;
-          oc->inc  = 0;
-          data += sizeof(ChannelCuePwm);
-        }
-        break;
+    case CHANNEL_TYPE_PWM_POSITION:
+    case CHANNEL_TYPE_PWM_SPEED:
+      {
+        OCCue * const oc = &result->oc[channel_settings[i].pwm.oc_num];
+        oc->con1 = channel_settings[i].pwm.con1;
+        oc->rs   = channel_settings[i].pwm.rs;
+        oc->r    = cue->pwm.pw;
+        oc->inc  = 0;
+        data += sizeof(ChannelCuePwm);
+      }
+      break;
 
-      case CHANNEL_TYPE_FM_SPEED:
-        {
-          OCCue * const oc = &result->oc[channel_settings[i].fm.oc_num];
-          oc->con1 = channel_settings[i].fm.con1;
-          oc->r    = cue->fm.period ? channel_settings[i].fm.r : 0;
-          oc->rs   = cue->fm.period ? cue->fm.period : 1;
-          oc->inc  = 0;
-          data += sizeof(ChannelCueFm);
-        }
-        break;
+    case CHANNEL_TYPE_FM_SPEED:
+      {
+        OCCue * const oc = &result->oc[channel_settings[i].fm.oc_num];
+        oc->con1 = channel_settings[i].fm.con1;
+        oc->r    = cue->fm.period ? channel_settings[i].fm.r : 0;
+        oc->rs   = cue->fm.period ? cue->fm.period : 1;
+        oc->inc  = 0;
+        data += sizeof(ChannelCueFm);
+      }
+      break;
 
-      case CHANNEL_TYPE_STEPS:
-        {
-          uint16_t cclk = 0;
-          if (!ConvertClock(cue->steps.clk, &cclk)) return false;
-          OCCue * const oc = &result->oc[channel_settings[i].steps.oc_num];
-          if (cue->steps.pw) {
-            oc->con1 = (cclk << 10) | 0b111;
-            oc->r    = cue->steps.period / 2;
-            oc->rs   = oc->r + cue->steps.pw;
-            oc->inc  = cue->steps.period - oc->rs;
-          } else {
-            oc->con1 = 0;
-          }
-          data += sizeof(ChannelCueSteps);
+    case CHANNEL_TYPE_STEPS:
+      {
+        uint16_t cclk = 0;
+        if (!ConvertClock(cue->steps.clk, &cclk)) return false;
+        OCCue * const oc = &result->oc[channel_settings[i].steps.oc_num];
+        if (cue->steps.pw) {
+          oc->con1 = (cclk << 10) | 0b111;
+          oc->r    = cue->steps.period / 2;
+          oc->rs   = oc->r + cue->steps.pw;
+          oc->inc  = cue->steps.period - oc->rs;
+        } else {
+          oc->con1 = 0;
         }
-        break;
+        data += sizeof(ChannelCueSteps);
+      }
+      break;
 
-      case CHANNEL_TYPE_BINARY:
-        {
-          PortCue * const port_cue =
-              &result->port[channel_settings[i].binary.port];
-          if (cue->binary.value) {
-            port_cue->or |= (1 << channel_settings[i].binary.nbit);
-          } else {
-            port_cue->and &= ~(1 << channel_settings[i].binary.nbit);
-          }
-          data += sizeof(ChannelCueBinary);
+    case CHANNEL_TYPE_BINARY:
+      {
+        PortCue * const port_cue =
+          &result->port[channel_settings[i].binary.port];
+        if (cue->binary.value) {
+          port_cue->or |= (1 << channel_settings[i].binary.nbit);
+        } else {
+          port_cue->and &= ~(1 << channel_settings[i].binary.nbit);
         }
-        break;
+        data += sizeof(ChannelCueBinary);
+      }
+      break;
 
-      default:
-        return false;
+    default:
+      return false;
     }
   }
   return true;
@@ -389,7 +386,7 @@ bool SequencerPush(uint8_t const *cue, uint16_t time) {
 
   if (!sequencer_open) return false;
   if (SequenceFull(&the_sequence)) return false;
-  
+
   TimedCue *new_cue = SequencePoke(&the_sequence);
   new_cue->time = time;
   if (!TranslateCue(cue, &new_cue->cue)) return false;
@@ -407,7 +404,7 @@ bool SequencerOpen(uint8_t const *settings, size_t size) {
   log_printf("SequencerOpen(0x%p, %u)", settings, size);
   log_print_buf(settings, size);
   assert(!size || settings);
-  
+
   if (sequencer_open) return false;
   if (!Configure(settings, size)) return false;
 
@@ -498,20 +495,20 @@ bool SequencerClose() {
   }
 
   if (oc_waiting_close) {
-    #define OC_STOP(num, ununed)                            \
-      if (the_config.oc_enabled & (1 << (num - 1))) {       \
-        if (!(the_config.oc_discrete & (1 << (num - 1)))) { \
-          OC##num##R   = 0;                                 \
-          OC##num##RS  = 1;                                 \
-          _OC##num##IP = 1;                                 \
-          _OC##num##IF = 0;                                 \
-          _OC##num##IE = 1;                                 \
-        }                                                   \
-      }
+#define OC_STOP(num, ununed)                              \
+    if (the_config.oc_enabled & (1 << (num - 1))) {       \
+      if (!(the_config.oc_discrete & (1 << (num - 1)))) { \
+        OC##num##R   = 0;                                 \
+        OC##num##RS  = 1;                                 \
+        _OC##num##IP = 1;                                 \
+        _OC##num##IF = 0;                                 \
+        _OC##num##IE = 1;                                 \
+      }                                                   \
+    }
 
     REPEAT_1B(OC_STOP, NUM_PWM_MODULES, 0)
-    #undef OC_STOP
-  } else {
+#undef OC_STOP
+      } else {
     PushEvent(SEQ_EVENT_CLOSED);
   }
 
@@ -519,18 +516,18 @@ bool SequencerClose() {
   return true;
 }
 
-#define OC_INTERRUPT(num, unused)                                         \
+#define OC_INTERRUPT(num, unused)                                       \
   void __attribute__((__interrupt__,no_auto_psv)) _OC##num##Interrupt() { \
-    OC##num##CON1 = 0;                                                    \
-    if (--oc_waiting_close == 0) PushEvent(SEQ_EVENT_CLOSED);             \
-    _OC##num##IF = 0;                                                     \
-    _OC##num##IE = 0;                                                     \
+    OC##num##CON1 = 0;                                                  \
+    if (--oc_waiting_close == 0) PushEvent(SEQ_EVENT_CLOSED);           \
+    _OC##num##IF = 0;                                                   \
+    _OC##num##IE = 0;                                                   \
   }
 
 REPEAT_1B(OC_INTERRUPT, NUM_PWM_MODULES, 0)
 #undef OC_INTERRUPT
 
-void SequencerKill() {
+  void SequencerKill() {
   log_printf("SequencerKill()");
   PRIORITY(INT_PRIORITY) {
     _T2IE = 0;
@@ -538,15 +535,15 @@ void SequencerKill() {
     sequencer_running = false;
     sequencer_should_run = false;
 
-    #define OC_KILL(num, ununed)                      \
-      if (the_config.oc_enabled & (1 << (num - 1))) { \
-        OC##num##CON1 = 0;                            \
-      }
+#define OC_KILL(num, ununed)                        \
+    if (the_config.oc_enabled & (1 << (num - 1))) { \
+      OC##num##CON1 = 0;                            \
+    }
 
     REPEAT_1B(OC_KILL, NUM_PWM_MODULES, 0)
-    #undef OC_KILL
+#undef OC_KILL
 
-    SequenceClear(&the_sequence);
+      SequenceClear(&the_sequence);
     ClearConfig(&the_config);
     num_active_channels = 0;
     QUEUE_CLEAR(&event_queue);

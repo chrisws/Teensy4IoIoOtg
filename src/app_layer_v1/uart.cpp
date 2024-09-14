@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * IOIO-OTG firmware to the Teensy 4.x platform.
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,14 +26,12 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
-#include "uart.h"
-
 #include <assert.h>
-#include "atomic.h"
-#include "Compiler.h"
-#include "field_accessors.h"
+
+#include "uart.h"
 #include "logging.h"
 #include "platform.h"
 #include "byte_queue.h"
@@ -197,21 +196,21 @@ void UARTTransmit(int uart_num, const void* data, int size) {
   }
 }
 
-#define DEFINE_INTERRUPT_HANDLERS(uart_num)                                   \
- void __attribute__((__interrupt__, auto_psv)) _U##uart_num##RXInterrupt() {  \
-   RXInterrupt(uart_num - 1);                                                 \
- }                                                                            \
-                                                                              \
- void __attribute__((__interrupt__, auto_psv)) _U##uart_num##TXInterrupt() {  \
-   TXInterrupt(uart_num - 1);                                                 \
- }
+#define DEFINE_INTERRUPT_HANDLERS(uart_num)                             \
+  void __attribute__((__interrupt__, auto_psv)) _U##uart_num##RXInterrupt() { \
+    RXInterrupt(uart_num - 1);                                          \
+  }                                                                     \
+                                                                        \
+  void __attribute__((__interrupt__, auto_psv)) _U##uart_num##TXInterrupt() { \
+    TXInterrupt(uart_num - 1);                                          \
+  }
 
 #if NUM_UART_MODULES > 4
-  #error Currently only devices with 4 or less UARTs are supported. Please fix below.
+#error Currently only devices with 4 or less UARTs are supported. Please fix below.
 #endif
 
 #if NUM_UART_MODULES >= 1
-  DEFINE_INTERRUPT_HANDLERS(1)
+DEFINE_INTERRUPT_HANDLERS(1)
 #endif
 
 #if NUM_UART_MODULES >= 2 && !ENABLE_LOGGING
