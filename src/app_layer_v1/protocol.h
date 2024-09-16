@@ -1,5 +1,5 @@
 /*
- * IOIO-OTG firmware to the Teensy 4.x platform.
+ * Teensy4 IOIO-OTG Project
  *
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
@@ -67,7 +67,7 @@ void AppProtocolInit(CHANNEL_HANDLE h);
 void AppProtocolTasks(CHANNEL_HANDLE h);
 
 // Process incoming protocol data.
-// data may not be NULL.
+// data may not be nullptr.
 bool AppProtocolHandleIncoming(const uint8_t* data, uint32_t data_len);
 
 // Send a protocol message.

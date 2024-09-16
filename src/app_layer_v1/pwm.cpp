@@ -1,5 +1,5 @@
 /*
- * IOIO-OTG firmware to the Teensy 4.x platform.
+ * Teensy4 IOIO-OTG Project
  *
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
@@ -41,7 +41,7 @@ typedef struct {
   unsigned int tmr;
 } OC_REGS;
 
-#define OC_REG(num) (((volatile OC_REGS *) &OC1CON1) + num)
+//#define OC_REG(num) (((volatile OC_REGS *) &OC1CON1) + num)
 
 void PWMInit() {
   // disable PWMs
@@ -51,29 +51,9 @@ void PWMInit() {
 }
 
 void SetPwmDutyCycle(int pwm_num, int dc, int fraction) {
-  volatile OC_REGS *regs;
   log_printf("SetPwmDutyCycle(%d, %d, %d)", pwm_num, dc, fraction);
-  regs = OC_REG(pwm_num);
-  regs->con2 &= ~0x0600;
-  regs->con2 |= fraction << 9;
-  regs->r = dc;
 }
 
 void SetPwmPeriod(int pwm_num, int period, int scale) {
-  volatile OC_REGS* regs;
   log_printf("SetPwmPeriod(%d, %d, %d)", pwm_num, period, scale);
-  regs = OC_REG(pwm_num);
-  regs->con1 = 0x0000;
-  if (period) {
-    static const int CLK_SRC[] = {
-      0x1C00, // 1x   - system clk
-      0x0C00, // 256x - timer 5
-      0x0800, // 64x  - timer 4
-      0x0400, // 8x   - timer 3
-    };
-    regs->r = 0;
-    regs->rs = period;
-    regs->con2 = 0x001F;
-    regs->con1 = 0x0006 | CLK_SRC[scale];
-  }
 }

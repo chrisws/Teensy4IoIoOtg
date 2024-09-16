@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * Teensy4 IOIO-OTG Project
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,6 +26,7 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 // Synchronization utilities.
@@ -55,5 +57,43 @@
 /*   SR = *sr; */
 /* } */
 
+// Step 1: Define the Macro
+// Create a macro for managing interrupt priorities. You might need to adjust the priority values to match the range expected by the ARM Cortex-M NVIC.
+// 
+// #include "Arduino.h"  // Include this for Teensy or other ARM CMSIS headers
+// 
+// // Define a macro for managing interrupt priority on Teensy
+// #define PRIORITY(n)                                     \
+//   uint32_t old_priority = NVIC_GetPriority(SysTick_IRQn); \
+//   NVIC_SetPriority(SysTick_IRQn, (n)); \
+//   __disable_irq(); \
+//   { \
+// 
+// #define END_PRIORITY                          \
+//   } \
+//   NVIC_SetPriority(SysTick_IRQn, old_priority); \
+//   __enable_irq();
+// Step 2: Use the Macro in Your Code
+// You would then use these macros in your code like so:
+// 
+// cpp
+// Copy code
+// PRIORITY(5) {  // disable interrupt with priority <= 5
+//   // ... do something critical ...
+// } END_PRIORITY
+// Explanation
+// NVIC_GetPriority: This function retrieves the current priority of the specified interrupt. You can use SysTick_IRQn or the specific IRQ you are interested in.
+// NVIC_SetPriority: This sets the priority of the specified interrupt.
+// __disable_irq: Disables global interrupts to ensure that the critical section runs atomically.
+// __enable_irq: Re-enables global interrupts.
+// Important Considerations
+// Adjust Priority Levels: Ensure that the priority levels you are using are within the range defined by the ARM Cortex-M specifications. The priority level range is typically from 0 to 255, but it’s often configured in steps of 4 or 8 (e.g., 0-15 with 4-bit priority).
+// 
+// Choose the Correct IRQ Number: SysTick_IRQn is used here as a placeholder. For specific interrupts, replace SysTick_IRQn with the appropriate interrupt number.
+// 
+// Check CMSIS Documentation: Consult the CMSIS (Cortex Microcontroller Software Interface Standard) documentation for more details on handling interrupts for your specific Teensy model.
+// 
+// By defining the appropriate macros and using them correctly, you can manage interrupt priorities and critical sections effectively on the Teensy microcontroller.
+// 
 
 #endif  // __SYNC_H__

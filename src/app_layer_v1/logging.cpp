@@ -29,38 +29,45 @@
  *
  */
 
-#include "timers.h"
 #include "logging.h"
-#include "sync.h"
 
-void TimersInit() {
-  log_printf("TimersInit()");
+#ifdef ENABLE_LOGGING
 
-  // The timers are initialized as follows:
-  // T2, T5: sysclk / 256 = 62.5KHz
-  // T3    : sysclk / 8 = 2MHz
-  // T4    : sysclk / 64 = 250KHz
-  // T3, T4, T5 all have their prescaler synchronized (i.e., in the exact same
-  // cycle when T5 increments, T3 and T4 increments as well.
-  // T2 lags behind T5 by exactly 46 cycles. Together with the 210 cycles it
-  // takes the ISR to process a sequencer cue, we're at 256 cycles, meaning all
-  // timers are immediately incremented.
+void log_print_buf(const void* buf, int size) {
+  const uint8_t * byte_buf = (const uint8_t *) buf;
+  int s = size;
+  while (size-- > 0) {
+    UART2PutHex(*byte_buf++);
+    UART2PutChar(' ');
+  }
+  UART2PutChar('\r');
+  UART2PutChar('\n');
 
-  // T2CON = 0x8030;  // timer 2 is sysclk / 256 = 62.5KHz
-  // T3CON = 0x8010;  // timer 3 is sysclk / 8 = 2MHz
-  // T4CON = 0x8020;  // timer 4 is sysclk / 64 = 250KHz
-  // T5CON = 0x8030;  // timer 5 is sysclk / 256 = 62.5KHz
-
-  // PRIORITY(7) {
-  //   asm("clr _TMR4\n"
-  //       "repeat #53\n"
-  //       "nop\n"
-  //       "clr _TMR3\n"
-  //       "repeat #5\n"
-  //       "nop\n"
-  //       "clr _TMR5\n"
-  //       "repeat #43\n"
-  //       "nop\n"
-  //       "clr _TMR2\n");
-  // }
+  byte_buf -= s;
+  while (s-- > 0) {
+    UART2PutChar(*byte_buf++);
+  }
+  UART2PutChar('\r');
+  UART2PutChar('\n');
 }
+
+void log_init() {
+  iPPSOutput(OUT_PIN_PPS_RP28,OUT_FN_PPS_U2TX);  // U2TX to pin 32
+  UART2Init();
+}
+
+int write(int handle, void *buffer, unsigned int len) {
+  if (handle == 1 || handle == 2) {
+    const char *p = buffer;
+    int i;
+    for (i = 0; i < len; ++i) {
+      UART2PutChar(*p++);
+    }
+    return len;
+  } else {
+    return -1;
+  }
+}
+
+
+#endif  // DEBUG_MODE

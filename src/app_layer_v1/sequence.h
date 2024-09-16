@@ -1,6 +1,7 @@
 /*
- * Copyright 2013 Ytai Ben-Tsvi. All rights reserved.
+ * Teensy4 IOIO-OTG Project
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,11 +26,11 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 #ifndef SEQUENCE_H
 #define SEQUENCE_H
-
 
 #include <assert.h>
 #include <stdint.h>
@@ -47,8 +48,8 @@ typedef struct {
 } OCCue;
 
 typedef struct {
-  uint16_t and;
-  uint16_t or;
+  uint16_t _and;
+  uint16_t _or;
 } PortCue;
 
 typedef struct {
@@ -81,7 +82,7 @@ extern inline TimedCue * SequencePoke(Sequence *seq) {
 }
 
 extern inline TimedCue const * SequencePeek(Sequence const *seq) {
-  if (QUEUE_SIZE(seq) == 0) return NULL;
+  if (QUEUE_SIZE(seq) == 0) return nullptr;
   return QUEUE_PEEK(seq);
 }
 

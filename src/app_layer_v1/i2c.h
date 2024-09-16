@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * Teensy4 IOIO-OTG Project
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,19 +26,16 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 #ifndef __I2C_H__
 #define __I2C_H__
 
-
 void I2CInit();
 void I2CTasks();
 // rate is 0:off 1:100KHz, 2:400KHz, 3:1MHz
 void I2CConfigMaster(int i2c_num, int rate, int smbus_levels);
-void I2CWriteRead(int i2c_num, unsigned int addr, const void* data,
-                  int write_bytes, int read_bytes);
-
-
+void I2CWriteRead(int i2c_num, unsigned int addr, const void *data, int write_bytes, int read_bytes);
 
 #endif  // __I2C_H__

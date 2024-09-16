@@ -1,5 +1,5 @@
 /*
- * IOIO-OTG firmware to the Teensy 4.x platform.
+ * Teensy4 IOIO-OTG Project
  *
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
@@ -47,11 +47,19 @@
 
 typedef struct {
   volatile int num_tx_since_last_report;
-  uint8_t_QUEUE rx_queue;
-  uint8_t_QUEUE tx_queue;
+  ByteQueue rx_queue;
+  ByteQueue tx_queue;
   uint8_t rx_buffer[RX_BUF_SIZE];
   uint8_t tx_buffer[TX_BUF_SIZE];
 } UART_STATE;
+
+
+void UARTInit() {}
+void UARTConfig(int uart_num, int rate, int speed4x, int two_stop_bits, int parity) {}
+void UARTTransmit(int uart_num, const void* data, int size) {}
+void UARTTasks() {}
+
+#if 0
 
 static UART_STATE uarts[NUM_UART_MODULES];
 
@@ -84,8 +92,7 @@ static void UARTConfigInternal(int uart_num, int rate, int speed4x, int two_stop
   volatile UART *regs = uart_reg[uart_num];
   UART_STATE *uart = &uarts[uart_num];
   if (external) {
-    log_printf("UARTConfig(%d, %d, %d, %d, %d)", uart_num, rate, speed4x,
-               two_stop_bits, parity);
+    log_printf("UARTConfig(%d, %d, %d, %d, %d)", uart_num, rate, speed4x, two_stop_bits, parity);
   }
   SAVE_UART_FOR_LOG(uart_num);
   AssignUxRXIE(uart_num, 0);  // disable RX int.
@@ -225,3 +232,4 @@ DEFINE_INTERRUPT_HANDLERS(1)
   DEFINE_INTERRUPT_HANDLERS(4)
 #endif
 
+#endif

@@ -1,5 +1,5 @@
 /*
- * IOIO-OTG firmware to the Teensy 4.x platform.
+ * Teensy4 IOIO-OTG Project
  *
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
@@ -43,7 +43,6 @@
 
 #define RX_BUF_SIZE 256
 #define TX_BUF_SIZE 256
-
 #define INT_PRIORITY 3
 
 typedef enum {
@@ -64,26 +63,26 @@ typedef struct {
   uint8_t can_send;          // number of bytes available in the FIFO
 
   // message format:
-  // uint8_t dest
-  // uint8_t tx_size
-  // uint8_t tx_data[tx_size]
+  // BYTE dest
+  // BYTE tx_size
+  // BYTE tx_data[tx_size]
   ByteQueue rx_queue;
 
   volatile int num_messages_rx_queue;
 
   // message format:
-  // uint8_t dest
-  // uint8_t total_size
-  // uint8_t data_size
-  // uint8_t rx_trim
-  // uint8_t tx_data[tx_size]
+  // BYTE dest
+  // BYTE total_size
+  // BYTE data_size
+  // BYTE rx_trim
+  // BYTE tx_data[tx_size]
   ByteQueue tx_queue;
 
   uint8_t rx_buffer[RX_BUF_SIZE];
   uint8_t tx_buffer[TX_BUF_SIZE];
 } SPI_STATE;
 
-static SPI_STATE spis[NUM_SPI_MODULES];
+//static SPI_STATE spis[NUM_SPI_MODULES];
 
 typedef struct {
   unsigned int spixstat;
@@ -93,6 +92,12 @@ typedef struct {
   unsigned int spixbuf;
 } SPIREG;
 
+void SPIInit() {}
+void SPIConfigMaster(int spi_num, int scale, int div, int smp_end, int clk_edge, int clk_pol) {}
+void SPITasks() {}
+void SPITransmit(int spi_num, int dest, const void* data, int data_size, int total_size, int trim_rx) {}
+
+#if 0
 #define _SPIREG_REF_COMMA(num, dummy) (volatile SPIREG*) &SPI##num##STAT,
 
 volatile SPIREG* spi_reg[NUM_SPI_MODULES] = {
@@ -104,8 +109,7 @@ static void SPIConfigMasterInternal(int spi_num, int scale, int div,
                                     int clk_pol, int external);
 
 void SPIInit() {
-  int i;
-  for (i = 0; i < NUM_SPI_MODULES; ++i) {
+  for (int i = 0; i < NUM_SPI_MODULES; ++i) {
     SPIConfigMasterInternal(i, 0, 0, 0, 0, 0, 0);
     AssignSPIxIP(i, INT_PRIORITY);  // int. priority INT_PRIORITY
   }
@@ -125,8 +129,7 @@ static void SPIConfigMasterInternal(int spi_num, int scale, int div,
   volatile SPIREG* regs = spi_reg[spi_num];
   SPI_STATE* spi = &spis[spi_num];
   if (external) {
-    log_printf("SPIConfigMaster(%d, %d, %d, %d, %d, %d)", spi_num, scale, div,
-               smp_end, clk_edge, clk_pol);
+    log_printf("SPIConfigMaster(%d, %d, %d, %d, %d, %d)", spi_num, scale, div, smp_end, clk_edge, clk_pol);
   }
   AssignSPIxIE(spi_num, 0);  // disable int.
   regs->spixstat = 0x0000;  // disable SPI
@@ -159,8 +162,7 @@ static void SPIConfigMasterInternal(int spi_num, int scale, int div,
   }
 }
 
-void SPIConfigMaster(int spi_num, int scale, int div, int smp_end, int clk_edge,
-                     int clk_pol) {
+void SPIConfigMaster(int spi_num, int scale, int div, int smp_end, int clk_edge, int clk_pol) {
   SPIConfigMasterInternal(spi_num, scale, div, smp_end, clk_edge, clk_pol, 1);
 }
 
@@ -179,8 +181,7 @@ static void SPIReportTxStatus(int spi_num) {
 }
 
 void SPITasks() {
-  int i;
-  for (i = 0; i < NUM_SPI_MODULES; ++i) {
+  for (int i = 0; i < NUM_SPI_MODULES; ++i) {
     int size1, size2, size;
     const uint8_t *data1, *data2;
     SPI_STATE *spi = &spis[i];
@@ -191,8 +192,7 @@ void SPITasks() {
       msg.args.spi_data.spi_num = i;
       msg.args.spi_data.ss_pin = ByteQueuePullByte(q);
       msg.args.spi_data.size = ByteQueuePullByte(q) - 1;
-      ByteQueuePeekMax(q, msg.args.spi_data.size + 1, &data1, &size1, &data2,
-                       &size2);
+      ByteQueuePeekMax(q, msg.args.spi_data.size + 1, &data1, &size1, &data2, &size2);
       size = size1 + size2;
       assert(size == msg.args.spi_data.size + 1);
       log_printf("SPI %d received %d bytes", i, size);
@@ -305,10 +305,10 @@ void SPITransmit(int spi_num, int dest, const void* data, int data_size,
   }
 }
 
-#define DEFINE_INTERRUPT_HANDLERS(spi_num)                              \
-  void __attribute__((__interrupt__, auto_psv)) _SPI##spi_num##Interrupt() { \
-    SPIInterrupt(spi_num - 1);                                          \
-  }
+// #define DEFINE_INTERRUPT_HANDLERS(spi_num)                              \
+//   void __attribute__((__interrupt__, auto_psv)) _SPI##spi_num##Interrupt() { \
+//     SPIInterrupt(spi_num - 1);                                          \
+//   }
 
 #if NUM_SPI_MODULES > 3
 #error Currently only devices with 3 or less SPIs are supported. Please fix below.
@@ -324,4 +324,6 @@ DEFINE_INTERRUPT_HANDLERS(1)
 
 #if NUM_SPI_MODULES >= 3
   DEFINE_INTERRUPT_HANDLERS(3)
+#endif
+
 #endif

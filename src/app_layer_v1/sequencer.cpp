@@ -1,5 +1,5 @@
 /*
- * IOIO-OTG firmware to the Teensy 4.x platform.
+ * Teensy4 IOIO-OTG Project
  *
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
@@ -30,7 +30,7 @@
  */
 
 #include <cassert>
-#include <ctdbool>
+#include <cstdbool>
 #include <cstring>
 
 #include "sequencer.h"
@@ -61,10 +61,10 @@ typedef struct {
   Cue idle_cue;
 } ChannelConfig;
 
-uint16_t sequencer_running __attribute__((near));
-uint16_t sequencer_should_run __attribute__((near));
-Sequence the_sequence __attribute__((far));
-ChannelConfig the_config __attribute__((near));
+uint16_t sequencer_running;
+uint16_t sequencer_should_run;
+Sequence the_sequence;
+ChannelConfig the_config;
 static bool sequencer_open = false;
 static size_t expected_cue_size;
 
@@ -183,7 +183,7 @@ static void ClearCue(Cue *cue) {
   size_t i;
   memset(cue, 0, sizeof(Cue));
   for (i = 0; i < ARRAY_LEN(cue->port); ++i) {
-    cue->port[i].and = ~0;
+    cue->port[i]._and = ~0;
   }
 }
 
@@ -193,11 +193,11 @@ static void ClearConfig(ChannelConfig *config) {
   expected_cue_size = 0;
 }
 
-static int TranslateSettings(uint8_t const * data,
+static int TranslateSettings(uint8_t const *data,
                              size_t max_size,
-                             InternalChannelSettings * result,
-                             ChannelConfig * config,
-                             size_t * cue_size) {
+                             InternalChannelSettings *result,
+                             ChannelConfig *config,
+                             size_t *cue_size) {
   assert(data);
   assert(max_size);
   assert(result);
@@ -271,9 +271,9 @@ static int TranslateSettings(uint8_t const * data,
     result->binary.nbit = nbit;
     if (settings->binary.init_when_idle) {
       if (settings->binary.init) {
-        config->idle_cue.port[port].or |= 1 << nbit;
+        config->idle_cue.port[port]._or |= 1 << nbit;
       } else {
-        config->idle_cue.port[port].and &= ~(1 << nbit);
+        config->idle_cue.port[port]._and &= ~(1 << nbit);
       }
     }
 
@@ -286,7 +286,6 @@ static int TranslateSettings(uint8_t const * data,
 }
 
 static bool Configure(uint8_t const *settings, size_t size) {
-
   ClearConfig(&the_config);
   num_active_channels = 0;
 
@@ -364,9 +363,9 @@ bool TranslateCue(uint8_t const *data, Cue *result) {
         PortCue * const port_cue =
           &result->port[channel_settings[i].binary.port];
         if (cue->binary.value) {
-          port_cue->or |= (1 << channel_settings[i].binary.nbit);
+          port_cue->_or |= (1 << channel_settings[i].binary.nbit);
         } else {
-          port_cue->and &= ~(1 << channel_settings[i].binary.nbit);
+          port_cue->_and &= ~(1 << channel_settings[i].binary.nbit);
         }
         data += sizeof(ChannelCueBinary);
       }
@@ -426,7 +425,8 @@ bool SequencerStart() {
   if (!sequencer_open) return false;
   if (sequencer_running) return false;
 
-  assert(PR2 == 1);
+  // TODO: fixme
+  //  assert(PR2 == 1);
 
   sequencer_running = true;
   sequencer_should_run = true;
@@ -434,8 +434,8 @@ bool SequencerStart() {
   // It is important that we clear the IF. We want the IRQ to happen in sync
   // with the timer clock.
   PRIORITY(INT_PRIORITY) {
-    _T2IF = 0;
-    _T2IE = 1;
+    //    _T2IF = 0;
+    //    _T2IE = 1;
   }
   return true;
 }
@@ -452,13 +452,13 @@ bool SequencerStop() {
   log_printf("SequencerStop()");
   if (!sequencer_open) return false;
 
-  _T2IE = 0;
+  //  _T2IE = 0;
   if (sequencer_running) {
     Freeze(&the_config.idle_cue,
            the_config.oc_enabled,
            the_config.oc_discrete,
            the_config.oc_idle_change);
-    PR2 = 1;
+    //    PR2 = 1;
     sequencer_running = false;
   }
   sequencer_should_run = false;
@@ -495,19 +495,19 @@ bool SequencerClose() {
   }
 
   if (oc_waiting_close) {
-#define OC_STOP(num, ununed)                              \
-    if (the_config.oc_enabled & (1 << (num - 1))) {       \
-      if (!(the_config.oc_discrete & (1 << (num - 1)))) { \
-        OC##num##R   = 0;                                 \
-        OC##num##RS  = 1;                                 \
-        _OC##num##IP = 1;                                 \
-        _OC##num##IF = 0;                                 \
-        _OC##num##IE = 1;                                 \
-      }                                                   \
-    }
+// #define OC_STOP(num, ununed)                              \
+//     if (the_config.oc_enabled & (1 << (num - 1))) {       \
+//       if (!(the_config.oc_discrete & (1 << (num - 1)))) { \
+//         OC##num##R   = 0;                                 \
+//         OC##num##RS  = 1;                                 \
+//         _OC##num##IP = 1;                                 \
+//         _OC##num##IF = 0;                                 \
+//         _OC##num##IE = 1;                                 \
+//       }                                                   \
+//     }
 
-    REPEAT_1B(OC_STOP, NUM_PWM_MODULES, 0)
-#undef OC_STOP
+//    REPEAT_1B(OC_STOP, NUM_PWM_MODULES, 0)
+//#undef OC_STOP
       } else {
     PushEvent(SEQ_EVENT_CLOSED);
   }
@@ -516,34 +516,34 @@ bool SequencerClose() {
   return true;
 }
 
-#define OC_INTERRUPT(num, unused)                                       \
-  void __attribute__((__interrupt__,no_auto_psv)) _OC##num##Interrupt() { \
-    OC##num##CON1 = 0;                                                  \
-    if (--oc_waiting_close == 0) PushEvent(SEQ_EVENT_CLOSED);           \
-    _OC##num##IF = 0;                                                   \
-    _OC##num##IE = 0;                                                   \
-  }
+// #define OC_INTERRUPT(num, unused)                                       \
+//   void __attribute__((__interrupt__,no_auto_psv)) _OC##num##Interrupt() { \
+//     OC##num##CON1 = 0;                                                  \
+//     if (--oc_waiting_close == 0) PushEvent(SEQ_EVENT_CLOSED);           \
+//     _OC##num##IF = 0;                                                   \
+//     _OC##num##IE = 0;                                                   \
+//   }
 
-REPEAT_1B(OC_INTERRUPT, NUM_PWM_MODULES, 0)
-#undef OC_INTERRUPT
+// REPEAT_1B(OC_INTERRUPT, NUM_PWM_MODULES, 0)
+// #undef OC_INTERRUPT
 
-  void SequencerKill() {
+void SequencerKill() {
   log_printf("SequencerKill()");
   PRIORITY(INT_PRIORITY) {
-    _T2IE = 0;
-    _T2IF = 0;
+    // _T2IE = 0;
+    // _T2IF = 0;
     sequencer_running = false;
     sequencer_should_run = false;
 
-#define OC_KILL(num, ununed)                        \
-    if (the_config.oc_enabled & (1 << (num - 1))) { \
-      OC##num##CON1 = 0;                            \
-    }
+// #define OC_KILL(num, ununed)                        \
+//     if (the_config.oc_enabled & (1 << (num - 1))) { \
+//       OC##num##CON1 = 0;                            \
+//     }
 
-    REPEAT_1B(OC_KILL, NUM_PWM_MODULES, 0)
-#undef OC_KILL
+//     REPEAT_1B(OC_KILL, NUM_PWM_MODULES, 0)
+// #undef OC_KILL
 
-      SequenceClear(&the_sequence);
+    SequenceClear(&the_sequence);
     ClearConfig(&the_config);
     num_active_channels = 0;
     QUEUE_CLEAR(&event_queue);
@@ -592,8 +592,8 @@ void SequencerInit() {
   // Just in case we were open. Reset everything to a known state.
   SequencerKill();
 
-  _T2IP = INT_PRIORITY;
-  PR2 = 1;
+  //  _T2IP = INT_PRIORITY;
+  //  PR2 = 1;
 }
 
 size_t SequencerQueueLength() {

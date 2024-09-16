@@ -1,6 +1,7 @@
 /*
- * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
+ * Teensy4 IOIO-OTG Project
  *
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -25,15 +26,14 @@
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
+ *
  */
 
 #ifndef __PWM_H__
 #define __PWM_H__
 
-
 void PWMInit();
 void SetPwmDutyCycle(int pwm_num, int dc, int fraction);
 void SetPwmPeriod(int pwm_num, int period, int scale);
-
 
 #endif  // __PWM_H__
