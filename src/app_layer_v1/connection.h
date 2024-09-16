@@ -29,13 +29,51 @@
  *
  */
 
-#pragma once
+// This module provides functions for ongoing operation of the connection.
+// ConnectionInit() must be called once to reset the state.
+// ConnectionTasks() must be called periodically in order to provide context
+// for all connection services. In particular, the ADB-related services need
+// context in order to maintain communications.
+
+#ifndef __CONNECTION_H__
+#define __CONNECTION_H__
+
+#include <cstdint>
 
 typedef int CHANNEL_HANDLE;
 
-void ConnectionSend(CHANNEL_HANDLE ch, const void *data, int size);
-int ConnectionGetMaxPacket(CHANNEL_HANDLE ch);
+#define INVALID_CHANNEL_HANDLE (-1)
+
+typedef enum {
+  CHANNEL_TYPE_ACC,
+  CHANNEL_TYPE_CDC_DEVICE,
+  CHANNEL_TYPE_MAX
+} CHANNEL_TYPE;
+
+// data != NULL -> incoming data
+// data = NULL, size = 0 -> Closed normally
+// data = NULL, size = 1 -> Closed as result of error
+//
+// arg is whichever value the client provided when opening the channel.
+typedef void (*ChannelCallback) (const uint8_t *data, uint32_t size, intptr_t arg);
+
+// Reset the state of all connection modules.
+void ConnectionInit();
+
+// Needs to be called by the application periodically in order to provide
+// context for the service provided by the connection library.
+void ConnectionTasks();
+
+// Close USB connection. All existing connections will be gracefully closed.
+void ConnectionShutdownAll();
+
+bool ConnectionTypeSupported(CHANNEL_TYPE con);
+bool ConnectionCanOpenChannel(CHANNEL_TYPE con);
+CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelCallback cb, intptr_t cb_arg);
+CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelCallback cb, intptr_t cb_arg);
+void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size);
 bool ConnectionCanSend(CHANNEL_HANDLE ch);
 void ConnectionCloseChannel(CHANNEL_HANDLE ch);
+int ConnectionGetMaxPacket(CHANNEL_HANDLE ch);
 
-
+#endif  // __CONNECTION_H__

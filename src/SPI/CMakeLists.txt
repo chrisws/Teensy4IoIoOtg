@@ -17,3 +17,5 @@ set(SOURCES
 )
 
 add_library(SPI STATIC ${SOURCES})
+
+target_include_directories(SPI PRIVATE ${CMAKE_SOURCE_DIR}/modules/cores/teensy4)

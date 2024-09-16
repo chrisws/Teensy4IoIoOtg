@@ -68,26 +68,25 @@ void AppProtocolTasks(CHANNEL_HANDLE h);
 
 // Process incoming protocol data.
 // data may not be nullptr.
-bool AppProtocolHandleIncoming(const uint8_t* data, uint32_t data_len);
+bool AppProtocolHandleIncoming(const uint8_t *data, uint32_t data_len);
 
 // Send a protocol message.
 // This is not intended for usage of the bootstrap code that glues the protocol
 // to the underlying serial connection layer, but rather for use of modules
 // implementing specific features of the protocol which involve producing output
 // data.
-void AppProtocolSendMessage(const OUTGOING_MESSAGE* msg);
+void AppProtocolSendMessage(const OUTGOING_MESSAGE *msg);
 
 // Send a protocol message with an attachment of variable-size arguments.
 // As specified in the protocol specification, some message types may have a
 // variable-size argument. This function is only intended for those message
 // types.
-void AppProtocolSendMessageWithVarArg(const OUTGOING_MESSAGE* msg,
-                                      const void* data, int size);
+void AppProtocolSendMessageWithVarArg(const OUTGOING_MESSAGE *msg, const void *data, int size);
 
 // The same as AppProtocolSendMessageWithVarArg(), but with the argument split
 // in two.
-void AppProtocolSendMessageWithVarArgSplit(const OUTGOING_MESSAGE* msg,
-                                          const void* data1, int size1,
-                                          const void* data2, int size2);
+void AppProtocolSendMessageWithVarArgSplit(const OUTGOING_MESSAGE *msg,
+                                           const void *data1, int size1,
+                                           const void *data2, int size2);
 
 #endif  // __PROTOCOL_H__

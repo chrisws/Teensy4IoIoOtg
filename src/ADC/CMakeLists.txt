@@ -19,3 +19,5 @@ set(SOURCES
 )
 
 add_library(ADC STATIC ${SOURCES})
+
+target_include_directories(ADC PRIVATE ${CMAKE_SOURCE_DIR}/modules/cores/teensy4)

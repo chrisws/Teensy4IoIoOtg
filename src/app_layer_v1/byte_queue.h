@@ -31,8 +31,8 @@
 
 // A generic byte queue, used for data buffering.
 
-#ifndef __uint8_tQUEUE_H__
-#define __uint8_tQUEUE_H__
+#ifndef __BYTEQUEUE_H__
+#define __BYTEQUEUE_H__
 
 #include <cstdint>
 
@@ -71,4 +71,4 @@ uint8_t ByteQueuePullByte(ByteQueue *q);
 static inline int ByteQueueSize(ByteQueue *q) { return q->size; }
 static inline int ByteQueueRemaining(ByteQueue *q) { return q->capacity - q->size; }
 
-#endif  // __uint8_tQUEUE_H__
+#endif  // __BYTEQUEUE_H__

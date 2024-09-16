@@ -19,3 +19,5 @@ set(SOURCES
 )
 
 add_library(Wire STATIC ${SOURCES})
+
+target_include_directories(Wire PRIVATE ${CMAKE_SOURCE_DIR}/modules/cores/teensy4)

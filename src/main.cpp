@@ -1,21 +1,38 @@
 /*
- * Original code by Ytai Ben-Tsvi, part of the IOIO-OTG project
- * https://github.com/ytai/ioio
+ * Teensy4 IOIO-OTG Project
  *
- * Modified by Chris Warren-Smith
- * These modifications were made to port the IOIO-OTG firmware to Teensy hardware.
+ * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
  *
- * License: [Apache License, Version 2.0]
- * See the LICENSE file for full details.
+ * Redistribution and use in source and binary forms, with or without modification, are
+ * permitted provided that the following conditions are met:
  *
- * Portions of this code may have been rewritten or replaced entirely.
+ *    1. Redistributions of source code must retain the above copyright notice, this list of
+ *       conditions and the following disclaimer.
+ *
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list
+ *       of conditions and the following disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ARSHAN POURSOHI OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The views and conclusions contained in the software and documentation are those of the
+ * authors and should not be interpreted as representing official policies, either expressed
+ * or implied.
+ *
  */
 
-#include "Compiler.h"
-#include "libconn/connection.h"
-#include "features.h"
-#include "protocol.h"
-#include "logging.h"
+#include "app_layer_v1/connection.h"
+#include "app_layer_v1/features.h"
+#include "app_layer_v1/protocol.h"
+#include "app_layer_v1/logging.h"
 
 // define in non-const arrays to ensure data space
 static char descManufacturer[] = "IOIO Open Source Project";
@@ -45,21 +62,13 @@ typedef enum {
 static STATE state = STATE_INIT;
 static CHANNEL_HANDLE handle;
 
-void AppCallback(const void* data, UINT32 data_len, int_or_ptr_t arg);
+void AppCallback(const uint8_t *data, uint32_t data_len, intptr_t arg);
 
 static inline CHANNEL_HANDLE OpenAvailableChannel() {
-  int_or_ptr_t arg = { .i = 0 };
-  if (ConnectionTypeSupported(CHANNEL_TYPE_ADB)) {
-    if (ConnectionCanOpenChannel(CHANNEL_TYPE_ADB)) {
-      return ConnectionOpenChannelAdb("tcp:4545", &AppCallback, arg);
-    }
-  } else if (ConnectionTypeSupported(CHANNEL_TYPE_ACC)) {
+  intptr_t arg = { 0 };
+  if (ConnectionTypeSupported(CHANNEL_TYPE_ACC)) {
     if (ConnectionCanOpenChannel(CHANNEL_TYPE_ACC)) {
       return ConnectionOpenChannelAccessory(&AppCallback, arg);
-    }
-  } else if (ConnectionTypeSupported(CHANNEL_TYPE_BT)) {
-    if (ConnectionCanOpenChannel(CHANNEL_TYPE_BT)) {
-      return ConnectionOpenChannelBtServer(&AppCallback, arg);
     }
   } else if (ConnectionTypeSupported(CHANNEL_TYPE_CDC_DEVICE)) {
     if (ConnectionCanOpenChannel(CHANNEL_TYPE_CDC_DEVICE)) {
@@ -69,7 +78,7 @@ static inline CHANNEL_HANDLE OpenAvailableChannel() {
   return INVALID_CHANNEL_HANDLE;
 }
 
-void AppCallback(const void* data, UINT32 data_len, int_or_ptr_t arg) {
+void AppCallback(const uint8_t *data, uint32_t data_len, intptr_t arg) {
   if (data) {
     if (!AppProtocolHandleIncoming(data, data_len)) {
       // got corrupt input. need to close the connection and soft reset.

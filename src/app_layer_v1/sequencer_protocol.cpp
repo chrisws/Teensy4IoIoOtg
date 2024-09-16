@@ -36,14 +36,14 @@ void SequencerTasks() {
   // Flush the event queue.
   uint8_t e;
   while ((e = SequencerGetEvent()) != SEQ_EVENT_NONE) {
-    SequencerEvent const ev = e & 0x07;
+    //SequencerEvent const ev = e;
     OUTGOING_MESSAGE msg;
     msg.type = SEQUENCER_EVENT;
-    msg.args.sequencer_event.event = ev;
-    if (ev == SEQ_EVENT_OPENED) {
+    msg.args.sequencer_event.event = e;
+    if (e == SEQ_EVENT_OPENED) {
       uint8_t size = (uint8_t) SequencerQueueLength();
       AppProtocolSendMessageWithVarArg(&msg, &size, 1);
-    } else if (ev == SEQ_EVENT_STOPPED) {
+    } else if (e == SEQ_EVENT_STOPPED) {
       uint8_t size = e >> 3;
       AppProtocolSendMessageWithVarArg(&msg, &size, 1);
     } else {
