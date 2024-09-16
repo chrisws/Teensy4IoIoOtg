@@ -260,7 +260,7 @@ void AppProtocolTasks(CHANNEL_HANDLE h) {
   if (ConnectionCanSend(h)) {
     const uint8_t *data;
     if (bytes_out) {
-      ByteQueuePull(&tx_queue, bytes_out);
+      ByteQueueDiscard(&tx_queue, bytes_out);
       bytes_out = 0;
     }
     ByteQueuePeek(&tx_queue, &data, &bytes_out);

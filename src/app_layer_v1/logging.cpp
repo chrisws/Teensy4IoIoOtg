@@ -34,7 +34,7 @@
 #ifdef ENABLE_LOGGING
 
 void log_print_buf(const void* buf, int size) {
-  const uint8_t * byte_buf = (const uint8_t *) buf;
+  const uint8_t *byte_buf = (const uint8_t *) buf;
   int s = size;
   while (size-- > 0) {
     UART2PutHex(*byte_buf++);
@@ -68,6 +68,5 @@ int write(int handle, void *buffer, unsigned int len) {
     return -1;
   }
 }
-
 
 #endif  // DEBUG_MODE

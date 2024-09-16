@@ -190,14 +190,14 @@ void SPITasks() {
       OUTGOING_MESSAGE msg;
       msg.type = SPI_DATA;
       msg.args.spi_data.spi_num = i;
-      msg.args.spi_data.ss_pin = ByteQueuePullByte(q);
-      msg.args.spi_data.size = ByteQueuePullByte(q) - 1;
+      msg.args.spi_data.ss_pin = ByteQueuePopByte(q);
+      msg.args.spi_data.size = ByteQueuePopByte(q) - 1;
       ByteQueuePeekMax(q, msg.args.spi_data.size + 1, &data1, &size1, &data2, &size2);
       size = size1 + size2;
       assert(size == msg.args.spi_data.size + 1);
       log_printf("SPI %d received %d bytes", i, size);
       AppProtocolSendMessageWithVarArgSplit(&msg, data1, size1, data2, size2);
-      ByteQueuePull(q, size);
+      ByteQueuePop(q, size);
       atomic16_add(&spi->num_messages_rx_queue, -1);
     }
     if (spi->num_tx_since_last_report > TX_BUF_SIZE / 2) {
@@ -223,19 +223,19 @@ static void SPIInterrupt(int spi_num) {
     // up until we write. Safe to clear.
     AssignSPIxIF(spi_num, 0);
 
-    spi->cur_msg_dest = ByteQueuePullByte(tx_queue);
-    spi->cur_msg_total_tx = ByteQueuePullByte(tx_queue);
+    spi->cur_msg_dest = ByteQueuePopByte(tx_queue);
+    spi->cur_msg_total_tx = ByteQueuePopByte(tx_queue);
     spi->cur_msg_total_rx = spi->cur_msg_total_tx;
-    spi->cur_msg_data_tx = ByteQueuePullByte(tx_queue);
-    spi->cur_msg_trim_rx = ByteQueuePullByte(tx_queue);
+    spi->cur_msg_data_tx = ByteQueuePopByte(tx_queue);
+    spi->cur_msg_trim_rx = ByteQueuePopByte(tx_queue);
     spi->can_send = 8;
     atomic16_add(&spi->num_tx_since_last_report, 4);
 
     // write packet header to rx_queue, if non-empty
     spi->cur_msg_rx_size = spi->cur_msg_total_rx - spi->cur_msg_trim_rx;
     if (spi->cur_msg_rx_size > 0) {
-      ByteQueuePushByte(rx_queue, spi->cur_msg_dest);
-      ByteQueuePushByte(rx_queue, spi->cur_msg_rx_size);
+      ByteQueuePush(rx_queue, spi->cur_msg_dest);
+      ByteQueuePush(rx_queue, spi->cur_msg_rx_size);
     }
 
     PinSetLat(spi->cur_msg_dest, 0);  // activate SS
@@ -247,7 +247,7 @@ static void SPIInterrupt(int spi_num) {
       if (spi->cur_msg_trim_rx) {
         --spi->cur_msg_trim_rx;
       } else {
-        ByteQueuePushByte(rx_queue, rx_byte);
+        ByteQueuePush(rx_queue, rx_byte);
       }
       --spi->cur_msg_total_rx;
       ++spi->can_send;  // for every byte read we can write one
@@ -270,7 +270,7 @@ static void SPIInterrupt(int spi_num) {
     while (bytes_to_write-- > 0) {
       uint8_t tx_byte = 0xFF;
       if (spi->cur_msg_data_tx) {
-        tx_byte = ByteQueuePullByte(tx_queue);
+        tx_byte = ByteQueuePopByte(tx_queue);
         --spi->cur_msg_data_tx;
         atomic16_add(&spi->num_tx_since_last_report, 1);
       }
@@ -296,10 +296,10 @@ void SPITransmit(int spi_num, int dest, const void* data, int data_size,
                  int total_size, int trim_rx) {
   ByteQueue *q = &spis[spi_num].tx_queue;
   PRIORITY(INT_PRIORITY) {
-    ByteQueuePushByte(q, dest);
-    ByteQueuePushByte(q, total_size);
-    ByteQueuePushByte(q, data_size);
-    ByteQueuePushByte(q, trim_rx);
+    ByteQueuePush(q, dest);
+    ByteQueuePush(q, total_size);
+    ByteQueuePush(q, data_size);
+    ByteQueuePush(q, trim_rx);
     ByteQueuePushBuffer(q, data, data_size);
     AssignSPIxIE(spi_num, 1);  // enable int.
   }

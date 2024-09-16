@@ -39,7 +39,7 @@ void ByteQueueOverflow() {
   log_printf("ByteQueueOverflow");
 }
 
-void ByteQueuePushByte(ByteQueue *q, uint8_t *b) {
+void ByteQueuePush(ByteQueue *q, uint8_t b) {
   if (q->size == q->capacity) {
     ByteQueueOverflow();
     return;
@@ -51,7 +51,7 @@ void ByteQueuePushByte(ByteQueue *q, uint8_t *b) {
   q->size++;
 }
 
-uint8_t ByteQueuePullByte(ByteQueue *q) {
+uint8_t ByteQueuePop(ByteQueue *q) {
   uint8_t ret;
   assert(q->size);
   ret = q->buf[q->read_cursor++];
@@ -60,16 +60,6 @@ uint8_t ByteQueuePullByte(ByteQueue *q) {
   }
   q->size--;
   return ret;
-}
-
-void ByteQueuePullToBuffer(ByteQueue *q, void *buffer, int size) {
-  const uint8_t *data1, *data2;
-  int size1, size2;
-  assert(q->size >= size);
-  ByteQueuePeekMax(q, size, &data1, &size1, &data2, &size2);
-  if (size1) memcpy(buffer, data1, size1);
-  if (size2) memcpy(((uint8_t * *) buffer) + size1, data2, size2);
-  ByteQueuePull(q, size);
 }
 
 void ByteQueuePushBuffer(ByteQueue *q, const void *buf, int len) {
@@ -87,7 +77,7 @@ void ByteQueuePushBuffer(ByteQueue *q, const void *buf, int len) {
   } else {
     int size_first = q->capacity - q->write_cursor;
     memcpy(q->buf + q->write_cursor, buf, size_first);
-    memcpy(q->buf, ((const uint8_t * *) buf) + size_first, len - size_first);
+    memcpy(q->buf, ((const uint8_t *) buf) + size_first, len - size_first);
     q->write_cursor += len - q->capacity;
   }
   q->size += len;
@@ -118,7 +108,7 @@ void ByteQueuePeekMax(ByteQueue *q, int max_size, const uint8_t **data1, int *si
   }
 }
 
-void ByteQueuePull(ByteQueue *q, int size) {
+void ByteQueueDiscard(ByteQueue *q, int size) {
   assert(size <= q->size);
   q->read_cursor += size;
   q->size -= size;

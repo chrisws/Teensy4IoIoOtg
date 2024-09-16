@@ -153,7 +153,7 @@ void UARTTasks() {
       msg.args.uart_data.uart_num = i;
       msg.args.uart_data.size = size1 + size2 - 1;
       AppProtocolSendMessageWithVarArgSplit(&msg, data1, size1, data2, size2);
-      ByteQueuePull(q, size1 + size2);
+      ByteQueuePop(q, size1 + size2);
     }
     if (uart->num_tx_since_last_report > TX_BUF_SIZE / 2) {
       UARTReportTxStatus(i);
@@ -169,7 +169,7 @@ static void TXInterrupt(int uart_num) {
     // TXIF == 1 iff the hardware FIFO is empty. We're just about to make it
     // non-empty, so we are safe to clear.
     AssignUxTXIF(uart_num, 0);
-    reg->uxtxreg = ByteQueuePullByte(q);
+    reg->uxtxreg = ByteQueuePopByte(q);
     ++uart->num_tx_since_last_report;
   }
   // IE == 1 iff there is data in the software queue pending to be sent.
@@ -185,7 +185,7 @@ static void RXInterrupt(int uart_num) {
     uint8_t b = reg->uxrxreg;
     if (noerr) {
       // there is no frame/parity err
-      ByteQueuePushByte(q, b);
+      ByteQueuePush(q, b);
     } // Otherwise, silently discard
     // It is OK to clear the interrupt now, since we're just about to poll for
     // any remaining characters in the FIFO, so we'll never miss an interrupt.

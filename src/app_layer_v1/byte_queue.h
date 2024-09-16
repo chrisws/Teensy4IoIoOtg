@@ -60,15 +60,15 @@ static inline void ByteQueueInit(ByteQueue *q, uint8_t *buf, int capacity) {
   ByteQueueClear(q);
 }
 
+static inline int ByteQueueSize(ByteQueue *q) {
+  return q->size;
+}
+
 void ByteQueuePushBuffer(ByteQueue *q, const void* buf, int len);
 void ByteQueuePeek(ByteQueue *q, const uint8_t **data, int* size);
 void ByteQueuePeekMax(ByteQueue *q, int max_size, const uint8_t **data1, int* size1, const uint8_t **data2, int *size2);
-void ByteQueuePull(ByteQueue *q, int size);
-void ByteQueuePullToBuffer(ByteQueue *q, void *buffer, int size);
-void ByteQueuePushByte(ByteQueue *q, uint8_t b);
-uint8_t ByteQueuePullByte(ByteQueue *q);
-
-static inline int ByteQueueSize(ByteQueue *q) { return q->size; }
-static inline int ByteQueueRemaining(ByteQueue *q) { return q->capacity - q->size; }
+void ByteQueueDiscard(ByteQueue *q, int size);
+void ByteQueuePush(ByteQueue *q, uint8_t b);
+uint8_t ByteQueuePop(ByteQueue *q);
 
 #endif  // __BYTEQUEUE_H__

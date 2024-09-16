@@ -32,10 +32,8 @@
 #ifndef __LOGGING_H__
 #define __LOGGING_H__
 
-#ifdef ENABLE_LOGGING
+#if defined(ENABLE_LOGGING) || defined(ENABLE_LOGGING_STDIO)
   #include <stdio.h>
-  #include "uart2.h"
-  #include "GenericTypeDefs.h"
 
   #define STRINGIFY(x) #x
   #define TOSTRING(x) STRINGIFY(x)
@@ -53,6 +51,5 @@
   #define SAVE_UART_FOR_LOG(uart)
   #define log_init()
 #endif
-
 
 #endif  // __LOGGING_H__
