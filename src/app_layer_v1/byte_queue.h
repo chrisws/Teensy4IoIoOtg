@@ -65,7 +65,7 @@ static inline int ByteQueueSize(ByteQueue *q) {
 }
 
 void ByteQueuePushBuffer(ByteQueue *q, const void* buf, int len);
-void ByteQueuePeek(ByteQueue *q, const uint8_t **data, int* size);
+void ByteQueuePeek(ByteQueue *q, const uint8_t **data, int *size);
 void ByteQueuePeekMax(ByteQueue *q, int max_size, const uint8_t **data1, int* size1, const uint8_t **data2, int *size2);
 void ByteQueueDiscard(ByteQueue *q, int size);
 void ByteQueuePush(ByteQueue *q, uint8_t b);

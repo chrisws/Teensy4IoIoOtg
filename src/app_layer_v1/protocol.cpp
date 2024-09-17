@@ -265,7 +265,9 @@ void AppProtocolTasks(CHANNEL_HANDLE h) {
     }
     ByteQueuePeek(&tx_queue, &data, &bytes_out);
     if (bytes_out > 0) {
-      if (bytes_out > max_packet) bytes_out = max_packet;
+      if (bytes_out > max_packet) {
+        bytes_out = max_packet;
+      }
       ConnectionSend(h, data, bytes_out);
     }
   }

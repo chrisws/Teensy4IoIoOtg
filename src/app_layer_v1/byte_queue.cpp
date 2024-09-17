@@ -88,7 +88,8 @@ void ByteQueuePeek(ByteQueue *q, const uint8_t **data, int *size) {
   if (!q->size) {
     *size = 0;
   } else if (q->write_cursor <= q->read_cursor) {
-    *size = q->capacity - q->read_cursor;
+    // tail is advanced of the head
+    *size = (q->capacity - q->read_cursor) + q->write_cursor;
   } else {
     *size = q->write_cursor - q->read_cursor;
   }
@@ -96,7 +97,9 @@ void ByteQueuePeek(ByteQueue *q, const uint8_t **data, int *size) {
 
 void ByteQueuePeekMax(ByteQueue *q, int max_size, const uint8_t **data1, int *size1, const uint8_t **data2, int *size2) {
   int size = q->size;  // create local copy, this might change!
-  if (max_size > size) max_size = size;
+  if (max_size > size) {
+    max_size = size;
+  }
   *data1 = q->buf + q->read_cursor;
   if (q->read_cursor + max_size > q->capacity) {
     *size1 = q->capacity - q->read_cursor;
