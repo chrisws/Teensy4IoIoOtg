@@ -29,25 +29,47 @@
  *
  */
 
-#include "icsp.h"
+#include "connection.h"
 
-void ICSPConfigure(int enable) {
+void ConnectionInit() {
 }
 
-void ICSPSix(uint32_t inst) {
+void ConnectionTasks() {
 }
 
-void ICSPRegout() {
+void ConnectionShutdownAll() {
 }
 
-void ICSPEnter() {
+bool ConnectionTypeSupported(CHANNEL_TYPE con) {
+  return true;
 }
 
-void ICSPExit() {
+bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
+  return true;
 }
 
-void ICSPTasks() {
+CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelCallback cb, intptr_t cb_arg) {
+  return 0;
 }
 
+CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelCallback cb, intptr_t cb_arg) {
+  return 0;
+}
 
+void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size) {
+  
+}
+
+bool ConnectionCanSend(CHANNEL_HANDLE ch) {
+  return false;
+}
+
+void ConnectionCloseChannel(CHANNEL_HANDLE ch) {
+}
+
+int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {
+  return 0;
+}
+
+  
 

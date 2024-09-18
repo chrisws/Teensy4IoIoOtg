@@ -114,18 +114,21 @@ static void PrintSequence(Sequence const *seq) {
 // These are the functions that actually write to the LAT and OC registers.
 // They are implemented in assembly for determinitic timing and performance.
 
-extern void Freeze(Cue const *idle_cue,
-                   uint16_t oc_enabled,
-                   uint16_t oc_discrete,
-                   uint16_t oc_idle_change);
+void Freeze(Cue const *idle_cue,
+            uint16_t oc_enabled,
+            uint16_t oc_discrete,
+            uint16_t oc_idle_change) {
+}
 
-extern void ProcessCue(Cue const *cue,
-                       uint16_t oc_enabled,
-                       uint16_t oc_discrete);
+void ProcessCue(Cue const *cue,
+                uint16_t oc_enabled,
+                uint16_t oc_discrete) {
+}
 
-extern void ProcessStart(Cue const *cue,
-                         uint16_t oc_enabled,
-                         uint16_t oc_discrete);
+void ProcessStart(Cue const *cue,
+                  uint16_t oc_enabled,
+                  uint16_t oc_discrete) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // High-level stuff.
@@ -603,4 +606,3 @@ size_t SequencerQueueLength() {
 size_t SequencerExpectedCueSize() {
   return expected_cue_size;
 }
-

@@ -41,7 +41,6 @@
 //   AppProtocolTasks(h);
 // }
 //
-// TODO: decouple this module from ADB via callback functions for sending data.
 
 #ifndef __PROTOCOL_H__
 #define __PROTOCOL_H__

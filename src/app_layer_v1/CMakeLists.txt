@@ -25,6 +25,7 @@ set(SOURCES
   uart.cpp
   logging.cpp
   byte_queue.cpp
+  connection.cpp
 )
 
 add_library(app_layer_v1 STATIC ${SOURCES})
