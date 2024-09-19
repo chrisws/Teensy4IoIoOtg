@@ -4,10 +4,10 @@
 #include <cassert>
 
 #include "app_layer_v1/byte_queue.h"
-
-const int BUF_SIZE = 10;
+#include "app_layer_v1/protocol.h"
 
 void testByteQueue() {
+  const int BUF_SIZE = 10;
   int index = 1;
   int size = 0;
   int size2 = 0;
@@ -72,10 +72,15 @@ void testByteQueue() {
   ByteQueueDiscard(&queue, 1);
   ByteQueuePeek(&queue, &data, &size);
   assert(size == 0);
-  
+}
+
+void testProtocol() {
+  AppProtocolInit(1);
+  AppProtocolTasks(1);
 }
 
 int main() {
   testByteQueue();
+  testProtocol();
   return 0;
 }

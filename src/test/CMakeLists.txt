@@ -10,7 +10,9 @@ add_compile_options(-DENABLE_LOGGING_STDIO=1)
 # Specify the source files for the project
 set(SOURCES
   main.cpp
+  empty.cpp
   ../app_layer_v1/byte_queue.cpp    
+  ../app_layer_v1/protocol.cpp
 )
 
 # Add the executable target

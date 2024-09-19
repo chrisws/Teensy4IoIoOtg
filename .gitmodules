@@ -10,3 +10,9 @@
 [submodule "modules/Wire"]
 	path = modules/Wire
 	url = https://github.com/PaulStoffregen/Wire.git
+[submodule "modules/USBHost_t36"]
+	path = modules/USBHost_t36
+	url = https://github.com/PaulStoffregen/USBHost_t36.git
+[submodule "modules/SdFat"]
+	path = modules/SdFat
+	url = https://github.com/PaulStoffregen/SdFat.git

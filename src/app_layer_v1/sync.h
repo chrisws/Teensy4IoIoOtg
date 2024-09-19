@@ -48,6 +48,40 @@
 
 #define PRIORITY(pri)
 
+/*
+class InterruptPriorityGuard {
+public:
+    // Constructor: Disable interrupts with priority <= `level`
+    explicit InterruptPriorityGuard(int level) : previousPriority_(getCurrentPriority()) {
+        setInterruptPriority(level);
+    }
+
+    // Destructor: Restore the previous interrupt priority state
+    ~InterruptPriorityGuard() {
+        setInterruptPriority(previousPriority_);
+    }
+
+private:
+    int previousPriority_;
+
+    // Mock function to get the current priority (to be replaced with real hardware-specific function)
+    int getCurrentPriority() {
+        // Replace with the actual method to get the current interrupt priority
+        return 0; // Placeholder for current interrupt priority
+    }
+
+    // Mock function to set the interrupt priority (to be replaced with real hardware-specific function)
+    void setInterruptPriority(int level) {
+        // Replace with the actual method to set the interrupt priority
+        // Example: NVIC_SetPriority for ARM Cortex-M
+        // NVIC_SetPriority(level);
+        // Code to disable interrupts with a priority <= `level`
+    }
+};
+
+  
+ */
+
 /* for (unsigned _sr __attribute__((cleanup(RestoreSR))) = SR, _i = 1; \ */
 /*      _i && (SR = (pri << 5));                                       \ */
 /*      _i = 0) */
