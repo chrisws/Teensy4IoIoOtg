@@ -30,6 +30,7 @@ set(SOURCES
 
 add_library(app_layer_v1 STATIC ${SOURCES})
 
+target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/cores/teensy4)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/ADC)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SPI)

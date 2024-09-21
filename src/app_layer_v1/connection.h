@@ -32,8 +32,7 @@
 // This module provides functions for ongoing operation of the connection.
 // ConnectionInit() must be called once to reset the state.
 // ConnectionTasks() must be called periodically in order to provide context
-// for all connection services. In particular, the ADB-related services need
-// context in order to maintain communications.
+// for all connection services.
 
 #ifndef __CONNECTION_H__
 #define __CONNECTION_H__
@@ -55,7 +54,7 @@ typedef enum {
 // data = NULL, size = 1 -> Closed as result of error
 //
 // arg is whichever value the client provided when opening the channel.
-typedef void (*ChannelCallback) (const uint8_t *data, uint32_t size, intptr_t arg);
+typedef void (*ChannelReceiveCallback) (const uint8_t *data, uint32_t size);
 
 // Reset the state of all connection modules.
 void ConnectionInit();
@@ -69,8 +68,8 @@ void ConnectionShutdownAll();
 
 bool ConnectionTypeSupported(CHANNEL_TYPE con);
 bool ConnectionCanOpenChannel(CHANNEL_TYPE con);
-CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelCallback cb, intptr_t cb_arg);
-CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelCallback cb, intptr_t cb_arg);
+CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelReceiveCallback cb);
+CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelReceiveCallback cb);
 void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size);
 bool ConnectionCanSend(CHANNEL_HANDLE ch);
 void ConnectionCloseChannel(CHANNEL_HANDLE ch);

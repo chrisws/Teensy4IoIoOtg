@@ -29,4 +29,6 @@ set(SOURCES
 
 add_library(USBHost_t36 STATIC ${SOURCES})
 
+target_include_directories(USBHost_t36 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SPI)
+target_include_directories(USBHost_t36 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SdFat/src)
 target_include_directories(USBHost_t36 PRIVATE ${CMAKE_SOURCE_DIR}/modules/cores/teensy4)

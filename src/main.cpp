@@ -62,23 +62,7 @@ typedef enum {
 static STATE state = STATE_INIT;
 static CHANNEL_HANDLE handle;
 
-void AppCallback(const uint8_t *data, uint32_t data_len, intptr_t arg);
-
-static inline CHANNEL_HANDLE OpenAvailableChannel() {
-  intptr_t arg = { 0 };
-  if (ConnectionTypeSupported(CHANNEL_TYPE_ACC)) {
-    if (ConnectionCanOpenChannel(CHANNEL_TYPE_ACC)) {
-      return ConnectionOpenChannelAccessory(&AppCallback, arg);
-    }
-  } else if (ConnectionTypeSupported(CHANNEL_TYPE_CDC_DEVICE)) {
-    if (ConnectionCanOpenChannel(CHANNEL_TYPE_CDC_DEVICE)) {
-      return ConnectionOpenChannelCdc(&AppCallback, arg);
-    }
-  }
-  return INVALID_CHANNEL_HANDLE;
-}
-
-void AppCallback(const uint8_t *data, uint32_t data_len, intptr_t arg) {
+void AppCallback(const uint8_t *data, uint32_t data_len) {
   if (data) {
     if (!AppProtocolHandleIncoming(data, data_len)) {
       // got corrupt input. need to close the connection and soft reset.
@@ -95,6 +79,19 @@ void AppCallback(const uint8_t *data, uint32_t data_len, intptr_t arg) {
     }
     state = STATE_OPEN_CHANNEL;
   }
+}
+
+static inline CHANNEL_HANDLE OpenAvailableChannel() {
+  if (ConnectionTypeSupported(CHANNEL_TYPE_ACC)) {
+    if (ConnectionCanOpenChannel(CHANNEL_TYPE_ACC)) {
+      return ConnectionOpenChannelAccessory(&AppCallback);
+    }
+  } else if (ConnectionTypeSupported(CHANNEL_TYPE_CDC_DEVICE)) {
+    if (ConnectionCanOpenChannel(CHANNEL_TYPE_CDC_DEVICE)) {
+      return ConnectionOpenChannelCdc(&AppCallback);
+    }
+  }
+  return INVALID_CHANNEL_HANDLE;
 }
 
 int main() {

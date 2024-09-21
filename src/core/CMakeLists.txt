@@ -83,6 +83,7 @@ set(SOURCES
  ${SRC}/usb_mtp.c
  ${SRC}/usb_rawhid.c
  ${SRC}/usb_seremu.c
+ ${SRC}/usb_serial.c
  ${SRC}/usb_serial2.c
  ${SRC}/usb_serial3.c
  ${SRC}/usb_serial.c

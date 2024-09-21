@@ -29,85 +29,50 @@
  *
  */
 
-#include "connection.h"
-
-//
-// CDC (Communications Device Class) is typically used for desktop communication.
-// It allows devices like the Teensy to communicate with a desktop or laptop via USB
-// as if it were a serial port (USB serial communication).
-//
-// Accessory mode is specifically for Android devices. In this mode, the Android device
-// acts as a USB device, and the Teensy (or another host) communicates with it by acting
-// as a USB host. Android Open Accessory (AOA) mode is commonly used for this purpose,
-// where an Android device communicates with peripherals like the IOIO.
-//
-
 #include <USBHost_t36.h>
-#include <usb_serial.h>
 
-USBHost usbHost;
-USBHostHub hub1(usbHost);
-USBHostHub hub2(usbHost);
-USBHostAndroid android(usbHost);
-USBSerial usbSerial(usbHost);
-
-const char *manufacturer = "YourCompany";
-const char *model = "YourModel";
-const char *description = "Description of Accessory";
-const char *version = "1.0";
-const char *uri = "http://yourcompany.com";
-const char *serial = "00000001";
+#include "connection.h"
+#include "usb_android.h"
 
 #define CHANNEL_HANDLE_ACCESSORY 1
 #define CHANNEL_HANDLE_CDC 2
+
+uint32_t baud = 1000000;
+uint32_t format = USBHOST_SERIAL_8N1;
+
+USBHost usbHost;
+USBHostAndroid android(usbHost);
+USBSerial usbSerial(usbHost);
+
 CHANNEL_HANDLE openChannelHandle = 0;
+ChannelReceiveCallback callback = nullptr;
 
-void handleCdc() {
+// Define the buffer to use to copy between the two devices
+uint8_t cdcBuffer[CDC_RX_SIZE_480];
+
+void cdcTask() {
   if (usbSerial.available()) {
-    // Example: Check if there's data available from the PC
-    uint8_t incomingData[64];  // Buffer for receiving data
-    int bytesRead = usbSerial.read(incomingData, sizeof(incomingData));
-
-    if (bytesRead > 0) {
+    int bytesRead = usbSerial.readBytes(cdcBuffer, sizeof(cdcBuffer));
+    if (bytesRead > 0 && callback) {
       // Process the incoming data
-      handleReceivedData(incomingData, bytesRead);
-    }
-
-    // Example: Send data to the PC if needed
-    const char *message = "Hello from Teensy via CDC!";
-    if (ConnectionCanSend(2)) {  // Channel 2 represents CDC
-      ConnectionSend(2, (uint8_t*)message, strlen(message));
+      callback(cdcBuffer, bytesRead);
     }
   }
 }
 
-void handleAccessory() {
+void accessoryTask() {
   if (android.connected()) {
     if (android.isAccessoryMode()) {
-      // Example: Check if there's data available from Android
-      uint8_t incomingData[64];  // Buffer for receiving data
-      int bytesRead = android.read(incomingData, sizeof(incomingData));
-
-      if (bytesRead > 0) {
-        // Process the incoming data
-        handleReceivedData(incomingData, bytesRead);
-      }
-
-      // Example: Send data to Android device if needed
-      const char *message = "Hello from Teensy!";
-      if (ConnectionCanSend(1)) {
-        ConnectionSend(1, (uint8_t*)message, strlen(message));
-      }
-
+      android.readWrite(callback);
     } else {
-      // Not in accessory mode, initiate AOA
-      android.beginAccessory(manufacturer, model, description, version, uri, serial);
+      android.beginAccessory();
     }
   }
 }
 
 void ConnectionInit() {
   usbHost.begin();
+  usbSerial.begin(baud);
 }
 
 void ConnectionTasks() {
@@ -116,26 +81,26 @@ void ConnectionTasks() {
 
   switch (openChannelHandle) {
   case CHANNEL_HANDLE_ACCESSORY:
-    handleAccessory();
+    accessoryTask();
     break;
   case CHANNEL_HANDLE_CDC:
-    handleCdc();
+    cdcTask();
     break;
   }
 }
 
 bool ConnectionTypeSupported(CHANNEL_TYPE con) {
-  return (con == CHANNEL_TYPE::ACCESSORY || con == CHANNEL_TYPE::CDC);
+  return (con == CHANNEL_TYPE::CHANNEL_TYPE_ACC || con == CHANNEL_TYPE::CHANNEL_TYPE_CDC_DEVICE);
 }
 
 bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
   bool result;
   switch (con) {
-  case CHANNEL_TYPE::CDC:
-    result = usbSerial.connected();
+  case CHANNEL_HANDLE_ACCESSORY:
+    result = android.connected();
     break;
   case CHANNEL_HANDLE_CDC:
-    result = android.connected();
+    result = usbSerial.available();
     break;
   default:
     result = false;
@@ -144,13 +109,15 @@ bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
   return result;
 }
 
-CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelCallback cb, intptr_t cb_arg) {
+CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelReceiveCallback cb) {
   openChannelHandle = android.isAccessoryMode() ? CHANNEL_HANDLE_ACCESSORY : 0;
+  callback = cb;
   return openChannelHandle;
 }
 
-CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelCallback cb, intptr_t cb_arg) {
+CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelReceiveCallback cb) {
   openChannelHandle = usbSerial.available() ? CHANNEL_HANDLE_CDC : 0;
+  callback = cb;
   return openChannelHandle;
 }
 
@@ -193,12 +160,11 @@ int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {
   int result;
   switch (ch) {
   case CHANNEL_HANDLE_ACCESSORY:
-    // // Accessory mode typically supports 64-byte packets
-    result = 64;
+    result = android.maxPacketSize();
     break;
   case CHANNEL_HANDLE_CDC:
-    // CDC packet size (typically 64 bytes for USB CDC)
-    result = 64;
+    // high-speed USB 
+    result = CDC_RX_SIZE_480;
     break;
   default:
     result = 0;
@@ -208,5 +174,5 @@ int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {
 
 void ConnectionShutdownAll() {
   android.end();
-  usbHost.end();
+  usbSerial.end();
 }
