@@ -24,7 +24,7 @@ git clone https://github.com/ARM-software/CMSIS_5.git
 git clone https://github.com/ARM-software/CMSIS-DSP.git
 cd CMSIS-DSP
 mkdir build && cd build
-cmake .. -Wno-dev -DARM_CPU=cortex-m7 -DUSE_FPU=ON -DFLOAT_ABI=hard -DCMAKE_C_FLAGS="-I/home/chrisws/src/Teensy4IoIo-otg/tools/CMSIS_5/CMSIS/Core/Include"
+cmake .. -Wno-dev -DARM_CPU=cortex-m7 -DUSE_FPU=ON -DFLOAT_ABI=hard -DCMAKE_C_FLAGS="-I/home/chrisws/src/Teensy4IoIoOtg/tools/CMSIS_5/CMSIS/Core/Include"
 cmake --build .
 ```
 

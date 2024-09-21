@@ -42,7 +42,7 @@ add_subdirectory(src/app_layer_v1)
 add_executable(${TARGET}.elf src/main.cpp)
 
 # Link against the CMSIS DSP library
-target_link_libraries(${TARGET}.elf core ADC SPI Wire USBHost_t36 app_layer_v1 ${CMAKE_CURRENT_SOURCE_DIR}/tools/CMSIS-DSP/build/Source/libCMSISDSP.a -lm -lstdc++)
+target_link_libraries(${TARGET}.elf app_layer_v1 core ADC SPI Wire USBHost_t36 ${CMAKE_CURRENT_SOURCE_DIR}/tools/CMSIS-DSP/build/Source/libCMSISDSP.a -lm -lstdc++)
 
 # Post-build step to create HEX file using objcopy
 add_custom_command(TARGET ${TARGET}.elf POST_BUILD
