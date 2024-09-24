@@ -2,6 +2,9 @@
 
 DIR=`pwd`
 
+git submodule init
+git submodule update
+
 (cd modules/CMSIS-DSP && \
     mkdir -p build && \
     cd build && \
