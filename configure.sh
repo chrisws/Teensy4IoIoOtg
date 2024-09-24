@@ -13,6 +13,6 @@ git submodule update
 
 (cd modules/teensy_loader_cli && make)
 
-
+(mkdir -p build && cd build && cmake ..)
 
 
