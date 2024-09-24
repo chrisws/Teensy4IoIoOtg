@@ -16,3 +16,12 @@
 [submodule "modules/SdFat"]
 	path = modules/SdFat
 	url = https://github.com/PaulStoffregen/SdFat.git
+[submodule "modules/teensy_loader_cli"]
+	path = modules/teensy_loader_cli
+	url = https://github.com/PaulStoffregen/teensy_loader_cli.git
+[submodule "modules/CMSIS_5"]
+	path = modules/CMSIS_5
+	url = https://github.com/ARM-software/CMSIS_5.git
+[submodule "modules/CMSIS-DSP"]
+	path = modules/CMSIS-DSP
+	url = https://github.com/ARM-software/CMSIS-DSP.git

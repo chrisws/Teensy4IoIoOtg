@@ -34,23 +34,6 @@
 #include "app_layer_v1/protocol.h"
 #include "app_layer_v1/logging.h"
 
-// define in non-const arrays to ensure data space
-static char descManufacturer[] = "IOIO Open Source Project";
-static char descModel[] = "IOIO";
-static char descDesc[] = "IOIO Standard Application";
-static char descVersion[] = FW_IMPL_VER;
-static char descUri[] = "https://github.com/ytai/ioio/wiki/ADK";
-static char descSerial[] = "N/A";
-
-const char* accessoryDescs[6] = {
-  descManufacturer,
-  descModel,
-  descDesc,
-  descVersion,
-  descUri,
-  descSerial
-};
-
 typedef enum {
   STATE_INIT,
   STATE_OPEN_CHANNEL,

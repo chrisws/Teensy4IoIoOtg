@@ -30,13 +30,24 @@
  */
 
 #include "usb_android.h"
+#include "protocol.h"
 
-const char *manufacturer = "YourCompany";
-const char *model = "YourModel";
-const char *description = "Description of Accessory";
-const char *version = "1.0";
-const char *uri = "http://yourcompany.com";
-const char *serial = "00000001";
+// define in non-const arrays to ensure data space
+static char descManufacturer[] = "IOIO Open Source Project";
+static char descModel[] = "IOIO";
+static char descDesc[] = "IOIO Standard Application";
+static char descVersion[] = FW_IMPL_VER;
+static char descUri[] = "https://github.com/ytai/ioio/wiki/ADK";
+static char descSerial[] = "N/A";
+
+const char* accessoryDescs[6] = {
+  descManufacturer,
+  descModel,
+  descDesc,
+  descVersion,
+  descUri,
+  descSerial
+};
 
 USBHostAndroid::USBHostAndroid(USBHost &host) {
 }

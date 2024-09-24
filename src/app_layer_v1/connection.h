@@ -34,6 +34,17 @@
 // ConnectionTasks() must be called periodically in order to provide context
 // for all connection services.
 
+//
+// CDC (Communications Device Class) is typically used for desktop communication.
+// It allows devices like the Teensy to communicate with a desktop or laptop via USB
+// as if it were a serial port (USB serial communication).
+//
+// Accessory mode is specifically for Android devices. In this mode, the Android device
+// acts as a USB device, and the Teensy (or another host) communicates with it by acting
+// as a USB host. Android Open Accessory (AOA) mode is commonly used for this purpose,
+// where an Android device communicates with peripherals like the IOIO.
+//
+
 #ifndef __CONNECTION_H__
 #define __CONNECTION_H__
 
