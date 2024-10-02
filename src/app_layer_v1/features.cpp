@@ -29,38 +29,107 @@
  *
  */
 
-#include "features.h"
+#include <cstring>
+#include <Arduino.h>
+
+#include "pins.h"
+#include "logging.h"
+#include "protocol.h"
+#include "adc.h"
+#include "pwm.h"
+#include "uart.h"
+#include "spi.h"
+#include "i2c.h"
+#include "timers.h"
+#include "sequencer.h"
+#include "incap.h"
+#include "sync.h"
 
 void SetPinDigitalOut(int pin, int value, int open_drain) {
+  log_printf("SetPinDigitalOut(%d, %d, %d)", pin, value, open_drain);
+  SAVE_PIN_FOR_LOG(pin);
+
 }
 
 void SetPinDigitalIn(int pin, int pull) {
+  log_printf("SetPinDigitalIn(%d, %d)", pin, pull);
+  SAVE_PIN_FOR_LOG(pin);
 }
 
 void SetPinAnalogIn(int pin) {
+  log_printf("SetPinAnalogIn(%d)", pin);
+  SAVE_PIN_FOR_LOG(pin);
 }
 
 void SetPinCapSense(int pin) {
+  log_printf("SetPinCapSense(%d)", pin);
+  SAVE_PIN_FOR_LOG(pin);
 }
 
 void SetPinPwm(int pin, int pwm_num, int enable) {
+  log_printf("SetPinPwm(%d, %d)", pin, pwm_num);
+  SAVE_PIN_FOR_LOG(pin);
+
 }
 
 void SetPinUart(int pin, int uart_num, int dir, int enable) {
+  log_printf("SetPinUart(%d, %d, %d, %d)", pin, uart_num, dir, enable);
+  SAVE_PIN_FOR_LOG(pin);
+  SAVE_UART_FOR_LOG(uart_num);
+
 }
 
 void SetPinSpi(int pin, int spi_num, int mode, int enable) {
+  log_printf("SetPinSpi(%d, %d, %d, %d)", pin, spi_num, mode, enable);
+  SAVE_PIN_FOR_LOG(pin);
+
 }
 
 void SetPinInCap(int pin, int incap_num, int enable) {
+  log_printf("SetPinInCap(%d, %d, %d)", pin, incap_num, enable);
+}
+
+static void PinsInit() {
+  // LED pin: output, open-drain, high (off)
+  SetPinDigitalOut(0, 1, 1);
+  for (int i = 1; i < NUM_PINS; ++i) {
+    // all other pins: input, no-pull
+    SetPinDigitalIn(i, 0);
+  }
 }
 
 void HardReset() {
+  log_printf("HardReset()");
+  log_printf("Rebooting...");
+
+  // Write to the AIRCR register to trigger reset
+  SCB_AIRCR = 0x05FA0004;
 }
 
 void SoftReset() {
+  PRIORITY(7) {
+    log_printf("SoftReset()");
+    TimersInit();
+    PinsInit();
+    PWMInit();
+    ADCInit();
+    UARTInit();
+    SPIInit();
+    I2CInit();
+    InCapInit();
+    SequencerInit();
+    // TODO: reset all peripherals!
+  }
 }
 
 void CheckInterface(uint8_t interface_id[8]) {
+  OUTGOING_MESSAGE msg;
+  msg.type = CHECK_INTERFACE_RESPONSE;
+  msg.args.check_interface_response.supported
+    = (memcmp(interface_id, PROTOCOL_IID_IOIO0005, 8) == 0)
+    || (memcmp(interface_id, PROTOCOL_IID_IOIO0004, 8) == 0)
+    || (memcmp(interface_id, PROTOCOL_IID_IOIO0003, 8) == 0)
+    || (memcmp(interface_id, PROTOCOL_IID_IOIO0002, 8) == 0)
+    || (memcmp(interface_id, PROTOCOL_IID_IOIO0001, 8) == 0);
+  AppProtocolSendMessage(&msg);
 }
-
