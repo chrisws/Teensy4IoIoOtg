@@ -29,35 +29,43 @@
  *
  */
 
-// Synchronization utilities.
+#include <Arduino.h>
+#include <imxrt.h>
 
-#ifndef __SYNC_H__
-#define __SYNC_H__
+#include "sync.h"
 
-#include <cstdint>
+uint8_t g_priority[NVIC_NUM_INTERRUPTS];
 
-// Disable interrupts at or below a certain level.
-// This is intended to be followed by a statement or a block, within which the
-// masking will apply. Once the block exits, even when jumping out in the middle
-// of it, the masking will be returned to its previous value.
-//
-// Example:
-// PRIORITY(5) {  // disable interrupt with priority <= 5
-//   ... do something critical ...
-// } // return to previous state
+// PIC: priorities 1 - 7
+// Cortex-M7: 0,16,32,48,64,80,96,112,128,144,160,176,192,208,224,240
+// not sure how to marry these concepts, note: cannot use broken teensy4/core_cm7.h 
 
-void SyncInit();
+void SyncInit() {
+  for (int i = 0; i < NVIC_NUM_INTERRUPTS; i++) {
+    g_priority[i] = NVIC_GET_PRIORITY(i);
+  }
+}
 
-struct DisableInterrupts {
-  explicit DisableInterrupts(unsigned _priority);
-  ~DisableInterrupts();
-  bool once();
+DisableInterrupts::DisableInterrupts(unsigned priority) : _priority(priority), _once(true) {
+  __disable_irq();
+  // for (int i = 0; i < NVIC_NUM_INTERRUPTS; i++) {
+  //   if (g_priority[i] <= _priority) {
+  //     //NVIC_DisableIRQ(i);
+  //   }
+  // }
+}
 
-  private:
-  unsigned _priority;
-  bool _once;
-};
+bool DisableInterrupts::once() {
+  bool result = _once;
+  _once = false;
+  return result;
+}
 
-#define PRIORITY(pri) for (DisableInterrupts disableInterrupts(pri); disableInterrupts.once();)
-
-#endif  // __SYNC_H__
+DisableInterrupts::~DisableInterrupts() {
+  __enable_irq();
+  // for (int i = 0; i < NVIC_NUM_INTERRUPTS; i++) {
+  //   if (g_priority[i] <= _priority) {
+  //     // NVIC_EnableIRQ(i);
+  //   }
+  // }
+}

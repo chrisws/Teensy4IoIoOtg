@@ -19,7 +19,7 @@ set(MCU_LD ${CMAKE_CURRENT_SOURCE_DIR}/modules/cores/teensy4/imxrt1062.ld)
 set(CPU_OPTIONS "-mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 -mthumb")
 
 # Preprocessor flags for both C and C++
-add_compile_options(-DF_CPU=600000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -DUSING_MAKEFILE -D__${MCU}__ -DARDUINO=10813 -DTEENSYDUINO=159 -DARDUINO_TEENSY40)
+add_compile_options(-DF_CPU=600000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -D__${MCU}__ -DARDUINO=10813 -DTEENSYDUINO=159 -DARDUINO_TEENSY40)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CPU_OPTIONS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPU_OPTIONS} -std=gnu++17 -felide-constructors -fno-exceptions -fpermissive -fno-rtti -Wno-error=narrowing")

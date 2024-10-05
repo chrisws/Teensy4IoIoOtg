@@ -122,7 +122,7 @@ void SoftReset() {
   }
 }
 
-void CheckInterface(uint8_t interface_id[8]) {
+void CheckInterface(uint8_t *interface_id) {
   OUTGOING_MESSAGE msg;
   msg.type = CHECK_INTERFACE_RESPONSE;
   msg.args.check_interface_response.supported

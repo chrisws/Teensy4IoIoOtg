@@ -21,6 +21,7 @@ set(SOURCES
   sequencer.cpp
   sequencer_protocol.cpp
   spi.cpp
+  sync.cpp
   timers.cpp
   uart.cpp
   logging.cpp
@@ -38,3 +39,4 @@ target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SPI)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/Wire)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/USBHost_t36)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SdFat/src)
+

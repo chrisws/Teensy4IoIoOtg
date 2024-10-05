@@ -91,6 +91,7 @@ set(SOURCES
  ${SRC}/WMath.cpp
  ${SRC}/WString.cpp
  ${SRC}/yield.cpp
+ ${SRC}/main.cpp
 )
 
 add_library(core STATIC ${SOURCES})

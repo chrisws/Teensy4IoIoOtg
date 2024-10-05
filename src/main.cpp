@@ -33,6 +33,7 @@
 #include "app_layer_v1/features.h"
 #include "app_layer_v1/protocol.h"
 #include "app_layer_v1/logging.h"
+#include "app_layer_v1/sync.h"
 
 typedef enum {
   STATE_INIT,
@@ -65,57 +66,58 @@ void AppCallback(const uint8_t *data, uint32_t data_len) {
 }
 
 static inline CHANNEL_HANDLE OpenAvailableChannel() {
+  CHANNEL_HANDLE result = INVALID_CHANNEL_HANDLE;
   if (ConnectionTypeSupported(CHANNEL_TYPE_ACC)) {
     if (ConnectionCanOpenChannel(CHANNEL_TYPE_ACC)) {
-      return ConnectionOpenChannelAccessory(&AppCallback);
+      result = ConnectionOpenChannelAccessory(&AppCallback);
     }
   } else if (ConnectionTypeSupported(CHANNEL_TYPE_CDC_DEVICE)) {
     if (ConnectionCanOpenChannel(CHANNEL_TYPE_CDC_DEVICE)) {
-      return ConnectionOpenChannelCdc(&AppCallback);
+      result = ConnectionOpenChannelCdc(&AppCallback);
     }
   }
-  return INVALID_CHANNEL_HANDLE;
+  return result;
 }
 
-int main() {
+extern "C" void setup() {
   log_init();
-  log_printf("***** Hello from app-layer! *******");
-
+  log_printf("firmware staring");
+  SyncInit();
   SoftReset();
   ConnectionInit();
-  while (1) {
-    ConnectionTasks();
-    switch (state) {
-    case STATE_INIT:
-      handle = INVALID_CHANNEL_HANDLE;
-      state = STATE_OPEN_CHANNEL;
-      break;
+}
 
-    case STATE_OPEN_CHANNEL:
-      if ((handle = OpenAvailableChannel()) != INVALID_CHANNEL_HANDLE) {
-        log_printf("Connected");
-        state = STATE_WAIT_CHANNEL_OPEN;
-      }
-      break;
+extern "C" void loop() {
+  ConnectionTasks();
+  switch (state) {
+  case STATE_INIT:
+    handle = INVALID_CHANNEL_HANDLE;
+    state = STATE_OPEN_CHANNEL;
+    break;
 
-    case STATE_WAIT_CHANNEL_OPEN:
-      if (ConnectionCanSend(handle)) {
-        log_printf("Channel open");
-        AppProtocolInit(handle);
-        state = STATE_CONNECTED;
-      }
-      break;
-
-    case STATE_CONNECTED:
-      AppProtocolTasks(handle);
-      break;
-
-    case STATE_ERROR:
-      ConnectionCloseChannel(handle);
-      SoftReset();
-      state = STATE_INIT;
-      break;
+  case STATE_OPEN_CHANNEL:
+    if ((handle = OpenAvailableChannel()) != INVALID_CHANNEL_HANDLE) {
+      log_printf("Connected");
+      state = STATE_WAIT_CHANNEL_OPEN;
     }
+    break;
+
+  case STATE_WAIT_CHANNEL_OPEN:
+    if (ConnectionCanSend(handle)) {
+      log_printf("Channel open");
+      AppProtocolInit(handle);
+      state = STATE_CONNECTED;
+    }
+    break;
+
+  case STATE_CONNECTED:
+    AppProtocolTasks(handle);
+    break;
+
+  case STATE_ERROR:
+    ConnectionCloseChannel(handle);
+    SoftReset();
+    state = STATE_INIT;
+    break;
   }
-  return 0;
 }
