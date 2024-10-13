@@ -19,11 +19,12 @@ set(MCU_LD ${CMAKE_CURRENT_SOURCE_DIR}/modules/cores/teensy4/imxrt1062.ld)
 set(CPU_OPTIONS "-mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-d16 -mthumb")
 
 # Preprocessor flags for both C and C++
-add_compile_options(-DF_CPU=600000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -D__${MCU}__ -DARDUINO=10813 -DTEENSYDUINO=159 -DARDUINO_TEENSY40)
+add_compile_options(-g -O2 -ffunction-sections -fdata-sections -DENABLE_LOGGING
+                    -DF_CPU=600000000 -DUSB_SERIAL -DLAYOUT_US_ENGLISH -D__${MCU}__ -DARDUINO=10813 -DTEENSYDUINO=159 -DARDUINO_TEENSY40)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CPU_OPTIONS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CPU_OPTIONS} -std=gnu++17 -felide-constructors -fno-exceptions -fpermissive -fno-rtti -Wno-error=narrowing")
-set(CMAKE_EXE_LINKER_FLAGS "-Os -Wl,--gc-sections,--relax ${SPECS} ${CPU_OPTIONS} -T ${MCU_LD}")
+set(CMAKE_EXE_LINKER_FLAGS "-Os -Wl,--gc-sections,--relax ${SPECS} ${CPU_OPTIONS} -T${MCU_LD}")
 
 # Set the toolchain for cross-compilation
 set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
@@ -41,8 +42,11 @@ add_subdirectory(src/app_layer_v1)
 # Add executable with the list of source files
 add_executable(${TARGET}.elf src/main.cpp)
 
+# enable all warnings in main.cpp
+target_compile_options(${TARGET}.elf PRIVATE -Wall)
+
 # Link against the CMSIS DSP library
-target_link_libraries(${TARGET}.elf app_layer_v1 core ADC SPI Wire USBHost_t36 ${CMAKE_CURRENT_SOURCE_DIR}/modules/CMSIS-DSP/build/Source/libCMSISDSP.a -lm -lstdc++)
+target_link_libraries(${TARGET}.elf app_layer_v1 USBHost_t36 Wire SPI ADC core ${CMAKE_CURRENT_SOURCE_DIR}/modules/CMSIS-DSP/build/Source/libCMSISDSP.a -lm)
 
 # Post-build step to create HEX file using objcopy
 add_custom_command(TARGET ${TARGET}.elf POST_BUILD

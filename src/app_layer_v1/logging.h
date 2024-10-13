@@ -32,24 +32,13 @@
 #ifndef __LOGGING_H__
 #define __LOGGING_H__
 
-#if defined(ENABLE_LOGGING) || defined(ENABLE_LOGGING_STDIO)
-  #include <stdio.h>
-
-  #define STRINGIFY(x) #x
-  #define TOSTRING(x) STRINGIFY(x)
-  
-  void log_print_buf(const void* buf, int size);
-  #define log_printf(f, ...) printf("[%s:%d] " f "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#if defined(ENABLE_LOGGING)
   void log_init();
-
-  #define SAVE_PIN_FOR_LOG(pin) if (pin == 32) return
-  #define SAVE_UART_FOR_LOG(uart) if (uart == 1) return
+  void _log_printf(const char *format, ...);
+  #define log_printf(f, ...) _log_printf("[%s:%d] " f "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
 #else
-  #define log_print_buf(b,s)
-  #define log_printf(...)
-  #define SAVE_PIN_FOR_LOG(pin)
-  #define SAVE_UART_FOR_LOG(uart)
   #define log_init()
+  #define log_printf(...)
 #endif
 
 #endif  // __LOGGING_H__

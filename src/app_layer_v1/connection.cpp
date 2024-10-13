@@ -29,8 +29,7 @@
  *
  */
 
-#include <USBHost_t36.h>
-
+#include "usb_host.h"
 #include "connection.h"
 #include "usb_android.h"
 
@@ -41,8 +40,8 @@ uint32_t baud = 1000000;
 uint32_t format = USBHOST_SERIAL_8N1;
 
 USBHost usbHost;
-USBHostAndroid android(usbHost);
-USBSerial usbSerial(usbHost);
+USBAndroid usbAndroid(usbHost);
+USBSerial_BigBuffer usbSerial(usbHost);
 
 CHANNEL_HANDLE openChannelHandle = 0;
 ChannelReceiveCallback callback = nullptr;
@@ -61,11 +60,11 @@ void cdcTask() {
 }
 
 void accessoryTask() {
-  if (android.connected()) {
-    if (android.isAccessoryMode()) {
-      android.readWrite(callback);
+  if (usbAndroid.connected()) {
+    if (usbAndroid.isAccessoryMode()) {
+      usbAndroid.readWrite(callback);
     } else {
-      android.beginAccessory();
+      usbAndroid.beginAccessory();
     }
   }
 }
@@ -97,7 +96,7 @@ bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
   bool result;
   switch (con) {
   case CHANNEL_HANDLE_ACCESSORY:
-    result = android.connected();
+    result = usbAndroid.connected();
     break;
   case CHANNEL_HANDLE_CDC:
     result = usbSerial.available();
@@ -110,7 +109,7 @@ bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
 }
 
 CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelReceiveCallback cb) {
-  openChannelHandle = android.isAccessoryMode() ? CHANNEL_HANDLE_ACCESSORY : 0;
+  openChannelHandle = usbAndroid.isAccessoryMode() ? CHANNEL_HANDLE_ACCESSORY : 0;
   callback = cb;
   return openChannelHandle;
 }
@@ -124,8 +123,8 @@ CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelReceiveCallback cb) {
 void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size) {
   switch (ch) {
   case CHANNEL_HANDLE_ACCESSORY:
-    if (android.isAccessoryMode()) {
-      android.write(data, size);
+    if (usbAndroid.isAccessoryMode()) {
+      usbAndroid.write(data, size);
     }
     break;
   case CHANNEL_HANDLE_CDC:
@@ -138,7 +137,7 @@ bool ConnectionCanSend(CHANNEL_HANDLE ch) {
   bool result;
   switch (ch) {
   case CHANNEL_HANDLE_ACCESSORY:
-    result = android.isAccessoryMode();
+    result = usbAndroid.isAccessoryMode();
     break;
   case CHANNEL_HANDLE_CDC:
     result = usbSerial.availableForWrite() > 0;
@@ -150,8 +149,8 @@ bool ConnectionCanSend(CHANNEL_HANDLE ch) {
 }
 
 void ConnectionCloseChannel(CHANNEL_HANDLE ch) {
-  if (ch == CHANNEL_HANDLE_ACCESSORY && android.isAccessoryMode()) {
-    android.end();
+  if (ch == CHANNEL_HANDLE_ACCESSORY && usbAndroid.isAccessoryMode()) {
+    usbAndroid.end();
   }
   openChannelHandle = 0;
 }
@@ -160,7 +159,7 @@ int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {
   int result;
   switch (ch) {
   case CHANNEL_HANDLE_ACCESSORY:
-    result = android.maxPacketSize();
+    result = usbAndroid.maxPacketSize();
     break;
   case CHANNEL_HANDLE_CDC:
     // high-speed USB 
@@ -173,6 +172,6 @@ int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {
 }
 
 void ConnectionShutdownAll() {
-  android.end();
+  usbAndroid.end();
   usbSerial.end();
 }

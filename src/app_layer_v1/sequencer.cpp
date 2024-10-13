@@ -383,7 +383,7 @@ bool TranslateCue(uint8_t const *data, Cue *result) {
 
 bool SequencerPush(uint8_t const *cue, uint16_t time) {
   log_printf("SequencerPush(0x%p, %u)", cue, time);
-  log_print_buf(cue, SequencerExpectedCueSize());
+  //log_print_buf(cue, SequencerExpectedCueSize());
   assert(cue);
 
   if (!sequencer_open) return false;
@@ -404,7 +404,7 @@ bool SequencerPush(uint8_t const *cue, uint16_t time) {
 
 bool SequencerOpen(uint8_t const *settings, size_t size) {
   log_printf("SequencerOpen(0x%p, %u)", settings, size);
-  log_print_buf(settings, size);
+  //log_print_buf(settings, size);
   assert(!size || settings);
 
   if (sequencer_open) return false;
@@ -557,7 +557,7 @@ void SequencerKill() {
 
 bool SequencerManualCue(uint8_t const *cue) {
   log_printf("SequencerManualCue(0x%p)", cue);
-  log_print_buf(cue, SequencerExpectedCueSize());
+  //log_print_buf(cue, SequencerExpectedCueSize());
   assert(cue);
 
   if (!sequencer_open) return false;

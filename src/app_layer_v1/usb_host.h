@@ -29,23 +29,9 @@
  *
  */
 
-#include <cstdint>
-#include "connection.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Woverloaded-virtual"
+#include <Print.h>
+#pragma GCC diagnostic pop
 
-#pragma once
-
-class USBAndroid {
-  public:
-  USBAndroid(USBHost &host);
-
-  bool connected();
-  bool isAccessoryMode();
-  int maxPacketSize();
-  int readWrite(ChannelReceiveCallback callback);
-  int write(const uint8_t *data, int size);
-
-  // initiate AOA
-  void beginAccessory(); 
-  void end();
-  
-};
+#include <USBHost_t36.h>

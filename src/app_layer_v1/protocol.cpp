@@ -156,8 +156,8 @@ typedef enum {
 } RX_MESSAGE_STATE;
 
 static INCOMING_MESSAGE rx_msg;
-static int rx_buffer_cursor;
-static int rx_message_remaining;
+static uint32_t rx_buffer_cursor;
+static uint32_t rx_message_remaining;
 static RX_MESSAGE_STATE rx_message_state;
 
 static inline uint8_t OutgoingMessageLength(const OUTGOING_MESSAGE *msg) {
@@ -379,13 +379,13 @@ static bool MessageDone() {
     {
       const uint8_t total_size = rx_msg.args.spi_master_request.total_size + 1;
       const uint8_t data_size = rx_msg.args.spi_master_request.data_size_neq_total
-                             ? rx_msg.args.spi_master_request.data_size
-                             : total_size;
+                                ? rx_msg.args.spi_master_request.data_size
+                                : total_size;
       const uint8_t res_size = rx_msg.args.spi_master_request.res_size_neq_total
-                            ? rx_msg.args.spi_master_request.vararg[rx_msg.args.spi_master_request.data_size_neq_total]
-                            : total_size;
+                               ? rx_msg.args.spi_master_request.vararg[rx_msg.args.spi_master_request.data_size_neq_total]
+                               : total_size;
       const uint8_t *const data = &rx_msg.args.spi_master_request.vararg[rx_msg.args.spi_master_request.data_size_neq_total
-                                                                          + rx_msg.args.spi_master_request.res_size_neq_total];
+                                                                         + rx_msg.args.spi_master_request.res_size_neq_total];
 
       SPITransmit(rx_msg.args.spi_master_request.spi_num,
                   rx_msg.args.spi_master_request.ss_pin,

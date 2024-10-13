@@ -216,7 +216,7 @@ typedef struct PACKED {
   uint8_t data_size_neq_total : 1;
   union {
     uint8_t data_size;
-    uint8_t vararg[0];
+    uint8_t *vararg;
   };
 } SPI_MASTER_REQUEST_ARGS;
 

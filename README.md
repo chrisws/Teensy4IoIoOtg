@@ -14,7 +14,7 @@ sudo apt install gcc-arm-none-eabi libusb-dev
 
 3. Setup UDEV rules
 
-https://www.pjrc.com/teensy/00-teensy.rules
+curl -sLO https://www.pjrc.com/teensy/00-teensy.rules
 
 ```
 sudo cp 00-teensy.rules /etc/udev/rules.d/

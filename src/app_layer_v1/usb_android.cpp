@@ -29,6 +29,7 @@
  *
  */
 
+#include "usb_host.h"
 #include "usb_android.h"
 #include "protocol.h"
 
@@ -49,32 +50,32 @@ const char* accessoryDescs[6] = {
   descSerial
 };
 
-USBHostAndroid::USBHostAndroid(USBHost &host) {
+USBAndroid::USBAndroid(USBHost &host) {
 }
 
-bool USBHostAndroid::connected() {
+bool USBAndroid::connected() {
   return false;
 }
 
-bool USBHostAndroid::isAccessoryMode() {
+bool USBAndroid::isAccessoryMode() {
   return false;
 }
 
-int USBHostAndroid::maxPacketSize() {
+int USBAndroid::maxPacketSize() {
   return 64;
 }
 
-int USBHostAndroid::readWrite(ChannelReceiveCallback callback) {
+int USBAndroid::readWrite(ChannelReceiveCallback callback) {
   return 0;
 }
 
-int USBHostAndroid::write(const uint8_t *data, int size) {
+int USBAndroid::write(const uint8_t *data, int size) {
   return 0;
 }
 
-void USBHostAndroid::beginAccessory() {
+void USBAndroid::beginAccessory() {
 }
 
-void USBHostAndroid::end() {
+void USBAndroid::end() {
 }
 

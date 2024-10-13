@@ -47,41 +47,38 @@
 
 void SetPinDigitalOut(int pin, int value, int open_drain) {
   log_printf("SetPinDigitalOut(%d, %d, %d)", pin, value, open_drain);
-  SAVE_PIN_FOR_LOG(pin);
 
 }
 
 void SetPinDigitalIn(int pin, int pull) {
   log_printf("SetPinDigitalIn(%d, %d)", pin, pull);
-  SAVE_PIN_FOR_LOG(pin);
+
 }
 
 void SetPinAnalogIn(int pin) {
   log_printf("SetPinAnalogIn(%d)", pin);
-  SAVE_PIN_FOR_LOG(pin);
+
 }
 
 void SetPinCapSense(int pin) {
   log_printf("SetPinCapSense(%d)", pin);
-  SAVE_PIN_FOR_LOG(pin);
+
 }
 
 void SetPinPwm(int pin, int pwm_num, int enable) {
   log_printf("SetPinPwm(%d, %d)", pin, pwm_num);
-  SAVE_PIN_FOR_LOG(pin);
+
 
 }
 
 void SetPinUart(int pin, int uart_num, int dir, int enable) {
   log_printf("SetPinUart(%d, %d, %d, %d)", pin, uart_num, dir, enable);
-  SAVE_PIN_FOR_LOG(pin);
-  SAVE_UART_FOR_LOG(uart_num);
 
 }
 
 void SetPinSpi(int pin, int spi_num, int mode, int enable) {
   log_printf("SetPinSpi(%d, %d, %d, %d)", pin, spi_num, mode, enable);
-  SAVE_PIN_FOR_LOG(pin);
+
 
 }
 

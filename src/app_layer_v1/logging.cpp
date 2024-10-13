@@ -29,43 +29,42 @@
  *
  */
 
+#include <Arduino.h>
 #include "logging.h"
 
 #ifdef ENABLE_LOGGING
 
-void log_print_buf(const void* buf, int size) {
-  const uint8_t *byte_buf = (const uint8_t *) buf;
-  int s = size;
-  while (size-- > 0) {
-    UART2PutHex(*byte_buf++);
-    UART2PutChar(' ');
-  }
-  UART2PutChar('\r');
-  UART2PutChar('\n');
+#include <cstdio>
+#include <cstring>
+#include <stdarg.h>
 
-  byte_buf -= s;
-  while (s-- > 0) {
-    UART2PutChar(*byte_buf++);
-  }
-  UART2PutChar('\r');
-  UART2PutChar('\n');
-}
+#define MAX_BUFFER_SIZE 1024
+char buffer[MAX_BUFFER_SIZE];
 
 void log_init() {
-  iPPSOutput(OUT_PIN_PPS_RP28,OUT_FN_PPS_U2TX);  // U2TX to pin 32
-  UART2Init();
+  Serial.begin(9600);
 }
 
-int write(int handle, void *buffer, unsigned int len) {
-  if (handle == 1 || handle == 2) {
-    const char *p = buffer;
-    int i;
-    for (i = 0; i < len; ++i) {
-      UART2PutChar(*p++);
+void _log_printf(const char *format, ...) {
+   va_list args;
+   va_start(args, format);
+   unsigned size = vsnprintf(NULL, 0, format, args);
+   va_end(args);
+
+  if (size < MAX_BUFFER_SIZE) {
+    buffer[0] = '\0';
+    va_start(args, format);
+    vsnprintf(buffer, size + 1, format, args);
+    va_end(args);
+    buffer[size] = '\0';
+
+    int i = size - 1;
+    while (i >= 0 && buffer[i] == ' ') {
+      buffer[i--] = '\0';
     }
-    return len;
-  } else {
-    return -1;
+    strcat(buffer, "\r\n");
+
+    Serial.println(buffer);
   }
 }
 
