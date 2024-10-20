@@ -52,8 +52,6 @@ void PushEvent(uint8_t e) {
   }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 typedef struct {
   uint16_t oc_enabled;
   uint16_t oc_discrete;
@@ -68,7 +66,6 @@ ChannelConfig the_config;
 static bool sequencer_open = false;
 static size_t expected_cue_size;
 
-////////////////////////////////////////////////////////////////////////////////
 // Debug utilities.
 
 #if 0
@@ -76,19 +73,18 @@ static void PrintCue(Cue const *cue, uint16_t oc_enabled) {
   size_t i;
   for (i = 0; i < ARRAY_LEN(cue->oc); ++i) {
     if (oc_enabled & (1 << i)) {
-      printf("OC%d { %u %u 0x%x %u } ", i, cue->oc[i].r, cue->oc[i].rs, cue->oc[i].con1, cue->oc[i].inc);
+      log("OC%d { %u %u 0x%x %u } ", i, cue->oc[i].r, cue->oc[i].rs, cue->oc[i].con1, cue->oc[i].inc);
     }
   }
   for (i = 0; i < ARRAY_LEN(cue->port); ++i) {
-    printf("P%d { &0x%x |0x%x } ", i, cue->port[i].and, cue->port[i].or);
+    log("P%d { &0x%x |0x%x } ", i, cue->port[i].and, cue->port[i].or);
   }
-  printf("\n");
+  log("\n");
 }
 
 static void PrintConfig(ChannelConfig const *cfg) {
-  printf("ChannelConfig\n"
-         "-------------\n");
-#define PRINT(field) printf(#field " = 0x%04x\n", cfg->field)
+  log("ChannelConfig\n-------------\n");
+#define PRINT(field) log(#field " = 0x%04x\n", cfg->field)
   PRINT(oc_enabled);
   PRINT(oc_discrete);
   PRINT(oc_idle_change);
@@ -97,19 +93,18 @@ static void PrintConfig(ChannelConfig const *cfg) {
 }
 
 static void PrintSequence(Sequence const *seq) {
-  printf("Sequence\n"
-         "--------\n");
+  log("Sequence\n--------\n");
   size_t i;
   for (i = 0; i < SequenceSize(seq); ++i) {
     TimedCue const * const timed_cue =
       &seq->buf[(seq->read_count + i) % SEQUENCE_LENGTH];
-    printf("Duration = %d\n", timed_cue->time);
+    log("Duration = %d\n", timed_cue->time);
     PrintCue(&timed_cue->cue);
   }
 }
 #endif
 
-////////////////////////////////////////////////////////////////////////////////
+//
 // Low-level stuff.
 // These are the functions that actually write to the LAT and OC registers.
 // They are implemented in assembly for determinitic timing and performance.
@@ -130,7 +125,7 @@ void ProcessStart(Cue const *cue,
                   uint16_t oc_discrete) {
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//
 // High-level stuff.
 // These are the functions that manage operation at the sequence level.
 //
@@ -212,7 +207,7 @@ static int TranslateSettings(uint8_t const *data,
   result->type = settings->type;
 
   // Set the channel settings.
-  log_printf("TranslateSettings, type=%d", settings->type);
+  log("TranslateSettings, type=%d", settings->type);
   switch (settings->type) {
   case CHANNEL_TYPE_PWM_POSITION:
   case CHANNEL_TYPE_PWM_SPEED:
@@ -382,7 +377,7 @@ bool TranslateCue(uint8_t const *data, Cue *result) {
 }
 
 bool SequencerPush(uint8_t const *cue, uint16_t time) {
-  log_printf("SequencerPush(0x%p, %u)", cue, time);
+  log("SequencerPush(0x%p, %u)", cue, time);
   //log_print_buf(cue, SequencerExpectedCueSize());
   assert(cue);
 
@@ -403,7 +398,7 @@ bool SequencerPush(uint8_t const *cue, uint16_t time) {
 
 
 bool SequencerOpen(uint8_t const *settings, size_t size) {
-  log_printf("SequencerOpen(0x%p, %u)", settings, size);
+  log("SequencerOpen(0x%p, %u)", settings, size);
   //log_print_buf(settings, size);
   assert(!size || settings);
 
@@ -424,7 +419,7 @@ bool SequencerOpen(uint8_t const *settings, size_t size) {
 }
 
 bool SequencerStart() {
-  log_printf("SequencerStart()");
+  log("SequencerStart()");
   if (!sequencer_open) return false;
   if (sequencer_running) return false;
 
@@ -444,7 +439,7 @@ bool SequencerStart() {
 }
 
 bool SequencerPause() {
-  log_printf("SequencerPause()");
+  log("SequencerPause()");
   if (!sequencer_open) return false;
   // Will be picked up upon next interrupt.
   sequencer_should_run = false;
@@ -452,7 +447,7 @@ bool SequencerPause() {
 }
 
 bool SequencerStop() {
-  log_printf("SequencerStop()");
+  log("SequencerStop()");
   if (!sequencer_open) return false;
 
   //  _T2IE = 0;
@@ -477,7 +472,7 @@ bool SequencerStop() {
 static int oc_waiting_close = 0;
 
 bool SequencerClose() {
-  log_printf("SequencerClose()");
+  log("SequencerClose()");
   if (!sequencer_open) return false;
 
   SequencerStop();
@@ -498,20 +493,20 @@ bool SequencerClose() {
   }
 
   if (oc_waiting_close) {
-// #define OC_STOP(num, ununed)                              \
-//     if (the_config.oc_enabled & (1 << (num - 1))) {       \
-//       if (!(the_config.oc_discrete & (1 << (num - 1)))) { \
-//         OC##num##R   = 0;                                 \
-//         OC##num##RS  = 1;                                 \
-//         _OC##num##IP = 1;                                 \
-//         _OC##num##IF = 0;                                 \
-//         _OC##num##IE = 1;                                 \
-//       }                                                   \
-//     }
+    // #define OC_STOP(num, ununed)                              \
+    //     if (the_config.oc_enabled & (1 << (num - 1))) {       \
+    //       if (!(the_config.oc_discrete & (1 << (num - 1)))) { \
+    //         OC##num##R   = 0;                                 \
+    //         OC##num##RS  = 1;                                 \
+    //         _OC##num##IP = 1;                                 \
+    //         _OC##num##IF = 0;                                 \
+    //         _OC##num##IE = 1;                                 \
+    //       }                                                   \
+    //     }
 
-//    REPEAT_1B(OC_STOP, NUM_PWM_MODULES, 0)
-//#undef OC_STOP
-      } else {
+    //    REPEAT_1B(OC_STOP, NUM_PWM_MODULES, 0)
+    //#undef OC_STOP
+  } else {
     PushEvent(SEQ_EVENT_CLOSED);
   }
 
@@ -531,20 +526,20 @@ bool SequencerClose() {
 // #undef OC_INTERRUPT
 
 void SequencerKill() {
-  log_printf("SequencerKill()");
+  log("SequencerKill()");
   PRIORITY(INT_PRIORITY) {
     // _T2IE = 0;
     // _T2IF = 0;
     sequencer_running = false;
     sequencer_should_run = false;
 
-// #define OC_KILL(num, ununed)                        \
-//     if (the_config.oc_enabled & (1 << (num - 1))) { \
-//       OC##num##CON1 = 0;                            \
-//     }
+    // #define OC_KILL(num, ununed)                        \
+    //     if (the_config.oc_enabled & (1 << (num - 1))) { \
+    //       OC##num##CON1 = 0;                            \
+    //     }
 
-//     REPEAT_1B(OC_KILL, NUM_PWM_MODULES, 0)
-// #undef OC_KILL
+    //     REPEAT_1B(OC_KILL, NUM_PWM_MODULES, 0)
+    // #undef OC_KILL
 
     SequenceClear(&the_sequence);
     ClearConfig(&the_config);
@@ -556,7 +551,7 @@ void SequencerKill() {
 }
 
 bool SequencerManualCue(uint8_t const *cue) {
-  log_printf("SequencerManualCue(0x%p)", cue);
+  log("SequencerManualCue(0x%p)", cue);
   //log_print_buf(cue, SequencerExpectedCueSize());
   assert(cue);
 
@@ -571,7 +566,7 @@ bool SequencerManualCue(uint8_t const *cue) {
 }
 
 bool SequencerManualStop() {
-  log_printf("SequencerManualStop()");
+  log("SequencerManualStop()");
   if (!sequencer_open) return false;
   if (sequencer_running) return false;
 
@@ -590,7 +585,7 @@ uint8_t SequencerGetEvent() {
 }
 
 void SequencerInit() {
-  log_printf("SequencerInit()");
+  log("SequencerInit()");
 
   // Just in case we were open. Reset everything to a known state.
   SequencerKill();

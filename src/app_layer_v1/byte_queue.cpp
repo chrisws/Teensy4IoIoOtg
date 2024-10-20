@@ -36,7 +36,7 @@
 #include "logging.h"
 
 void ByteQueueOverflow() {
-  log_printf("ByteQueueOverflow");
+  log("ByteQueueOverflow");
 }
 
 void ByteQueuePush(ByteQueue *q, uint8_t b) {

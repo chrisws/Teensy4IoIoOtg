@@ -48,7 +48,7 @@
 #include "incap.h"
 #include "sequencer_protocol.h"
 
-#define CHECK(cond) do { if (!(cond)) { log_printf("Check failed: %s", #cond); return false; }} while(0)
+#define CHECK(cond) do { if (!(cond)) { log("Check failed: %s", #cond); return false; }} while(0)
 
 const uint8_t incoming_arg_size[MESSAGE_TYPE_LIMIT] = {
   sizeof(HARD_RESET_ARGS),
@@ -247,7 +247,7 @@ void AppProtocolSendMessageWithVarArgSplit(const OUTGOING_MESSAGE *msg,
 void AppProtocolTasks(CHANNEL_HANDLE h) {
   if (state == STATE_CLOSED) return;
   if (state == STATE_CLOSING && ByteQueueSize(&tx_queue) == 0) {
-    log_printf("Finished flushing, closing the channel.");
+    log("Finished flushing, closing the channel.");
     ConnectionCloseChannel(h);
     state = STATE_CLOSED;
     return;
@@ -508,7 +508,7 @@ static bool MessageDone() {
     break;
 
   case SOFT_CLOSE:
-    log_printf("Soft close requested");
+    log("Soft close requested");
     Echo();
     state = STATE_CLOSING;
     break;
@@ -556,7 +556,7 @@ static bool MessageDone() {
 bool AppProtocolHandleIncoming(const uint8_t *data, uint32_t data_len) {
   assert(data);
   if (state != STATE_OPEN) {
-    log_printf("Shouldn't get data after close!");
+    log("Shouldn't get data after close!");
     return false;
   }
 

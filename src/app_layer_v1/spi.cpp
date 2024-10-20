@@ -129,7 +129,7 @@ static void SPIConfigMasterInternal(int spi_num, int scale, int div,
   volatile SPIREG* regs = spi_reg[spi_num];
   SPI_STATE* spi = &spis[spi_num];
   if (external) {
-    log_printf("SPIConfigMaster(%d, %d, %d, %d, %d, %d)", spi_num, scale, div, smp_end, clk_edge, clk_pol);
+    log("SPIConfigMaster(%d, %d, %d, %d, %d, %d)", spi_num, scale, div, smp_end, clk_edge, clk_pol);
   }
   AssignSPIxIE(spi_num, 0);  // disable int.
   regs->spixstat = 0x0000;  // disable SPI
@@ -195,7 +195,7 @@ void SPITasks() {
       ByteQueuePeekMax(q, msg.args.spi_data.size + 1, &data1, &size1, &data2, &size2);
       size = size1 + size2;
       assert(size == msg.args.spi_data.size + 1);
-      log_printf("SPI %d received %d bytes", i, size);
+      log("SPI %d received %d bytes", i, size);
       AppProtocolSendMessageWithVarArgSplit(&msg, data1, size1, data2, size2);
       ByteQueuePop(q, size);
       atomic16_add(&spi->num_messages_rx_queue, -1);

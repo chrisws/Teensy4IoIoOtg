@@ -57,7 +57,6 @@ typedef int CHANNEL_HANDLE;
 typedef enum {
   CHANNEL_TYPE_ACC,
   CHANNEL_TYPE_CDC_DEVICE,
-  CHANNEL_TYPE_MAX
 } CHANNEL_TYPE;
 
 // data != NULL -> incoming data

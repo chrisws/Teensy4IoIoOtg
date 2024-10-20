@@ -46,44 +46,44 @@
 #include "sync.h"
 
 void SetPinDigitalOut(int pin, int value, int open_drain) {
-  log_printf("SetPinDigitalOut(%d, %d, %d)", pin, value, open_drain);
+  log("SetPinDigitalOut(%d, %d, %d)", pin, value, open_drain);
 
 }
 
 void SetPinDigitalIn(int pin, int pull) {
-  log_printf("SetPinDigitalIn(%d, %d)", pin, pull);
+  log("SetPinDigitalIn(%d, %d)", pin, pull);
 
 }
 
 void SetPinAnalogIn(int pin) {
-  log_printf("SetPinAnalogIn(%d)", pin);
+  log("SetPinAnalogIn(%d)", pin);
 
 }
 
 void SetPinCapSense(int pin) {
-  log_printf("SetPinCapSense(%d)", pin);
+  log("SetPinCapSense(%d)", pin);
 
 }
 
 void SetPinPwm(int pin, int pwm_num, int enable) {
-  log_printf("SetPinPwm(%d, %d)", pin, pwm_num);
+  log("SetPinPwm(%d, %d)", pin, pwm_num);
 
 
 }
 
 void SetPinUart(int pin, int uart_num, int dir, int enable) {
-  log_printf("SetPinUart(%d, %d, %d, %d)", pin, uart_num, dir, enable);
+  log("SetPinUart(%d, %d, %d, %d)", pin, uart_num, dir, enable);
 
 }
 
 void SetPinSpi(int pin, int spi_num, int mode, int enable) {
-  log_printf("SetPinSpi(%d, %d, %d, %d)", pin, spi_num, mode, enable);
+  log("SetPinSpi(%d, %d, %d, %d)", pin, spi_num, mode, enable);
 
 
 }
 
 void SetPinInCap(int pin, int incap_num, int enable) {
-  log_printf("SetPinInCap(%d, %d, %d)", pin, incap_num, enable);
+  log("SetPinInCap(%d, %d, %d)", pin, incap_num, enable);
 }
 
 static void PinsInit() {
@@ -96,8 +96,8 @@ static void PinsInit() {
 }
 
 void HardReset() {
-  log_printf("HardReset()");
-  log_printf("Rebooting...");
+  log("HardReset()");
+  log("Rebooting...");
 
   // Write to the AIRCR register to trigger reset
   SCB_AIRCR = 0x05FA0004;
@@ -105,7 +105,7 @@ void HardReset() {
 
 void SoftReset() {
   PRIORITY(7) {
-    log_printf("SoftReset()");
+    log("SoftReset()");
     TimersInit();
     PinsInit();
     PWMInit();
@@ -115,7 +115,15 @@ void SoftReset() {
     I2CInit();
     InCapInit();
     SequencerInit();
-    // TODO: reset all peripherals!
+
+    // blink the led to indicate we are here
+    pinMode(13, OUTPUT);
+    for (int i = 0; i < 5; i++) {
+      digitalWriteFast(13, HIGH);
+      delay(100);
+      digitalWriteFast(13, LOW);
+      delay(100);
+    }
   }
 }
 

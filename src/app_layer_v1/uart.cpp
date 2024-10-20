@@ -92,7 +92,7 @@ static void UARTConfigInternal(int uart_num, int rate, int speed4x, int two_stop
   volatile UART *regs = uart_reg[uart_num];
   UART_STATE *uart = &uarts[uart_num];
   if (external) {
-    log_printf("UARTConfig(%d, %d, %d, %d, %d)", uart_num, rate, speed4x, two_stop_bits, parity);
+    log("UARTConfig(%d, %d, %d, %d, %d)", uart_num, rate, speed4x, two_stop_bits, parity);
   }
   SAVE_UART_FOR_LOG(uart_num);
   AssignUxRXIE(uart_num, 0);  // disable RX int.
@@ -147,7 +147,7 @@ void UARTTasks() {
     ByteQueue * q = &uart->rx_queue;
     ByteQueuePeekMax(q, 64, &data1, &size1, &data2, &size2);
     if (size1) {
-      log_printf("UART %d received %d bytes", i, size1 + size2);
+      log("UART %d received %d bytes", i, size1 + size2);
       OUTGOING_MESSAGE msg;
       msg.type = UART_DATA;
       msg.args.uart_data.uart_num = i;
@@ -194,7 +194,7 @@ static void RXInterrupt(int uart_num) {
 }
 
 void UARTTransmit(int uart_num, const void* data, int size) {
-  log_printf("UARTTransmit(%d, %p, %d)", uart_num, data, size);
+  log("UARTTransmit(%d, %p, %d)", uart_num, data, size);
   SAVE_UART_FOR_LOG(uart_num);
   ByteQueue *q = &uarts[uart_num].tx_queue;
   PRIORITY(TX_PRIORITY) {

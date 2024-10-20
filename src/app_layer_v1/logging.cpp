@@ -45,11 +45,11 @@ void log_init() {
   Serial.begin(9600);
 }
 
-void _log_printf(const char *format, ...) {
-   va_list args;
-   va_start(args, format);
-   unsigned size = vsnprintf(NULL, 0, format, args);
-   va_end(args);
+void _log(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  unsigned size = vsnprintf(NULL, 0, format, args);
+  va_end(args);
 
   if (size < MAX_BUFFER_SIZE) {
     buffer[0] = '\0';
@@ -59,13 +59,15 @@ void _log_printf(const char *format, ...) {
     buffer[size] = '\0';
 
     int i = size - 1;
-    while (i >= 0 && buffer[i] == ' ') {
+    while (i >= 0 && (buffer[i] == ' ' ||
+                      buffer[i] == '\t' ||
+                      buffer[i] == '\n' ||
+                      buffer[i] == '\r')) {
       buffer[i--] = '\0';
     }
-    strcat(buffer, "\r\n");
 
     Serial.println(buffer);
   }
 }
 
-#endif  // DEBUG_MODE
+#endif  // ENABLE_LOGGING

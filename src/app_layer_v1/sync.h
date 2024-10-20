@@ -51,13 +51,13 @@ void SyncInit();
 struct DisableInterrupts {
   explicit DisableInterrupts(unsigned _priority);
   ~DisableInterrupts();
-  bool once();
+  bool latch();
 
   private:
   unsigned _priority;
   bool _once;
 };
 
-#define PRIORITY(pri) for (DisableInterrupts disableInterrupts(pri); disableInterrupts.once();)
+#define PRIORITY(pri) for (DisableInterrupts disableInterrupts(pri); disableInterrupts.latch();)
 
 #endif  // __SYNC_H__

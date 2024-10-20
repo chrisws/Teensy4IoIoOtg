@@ -34,11 +34,15 @@
 
 #if defined(ENABLE_LOGGING)
   void log_init();
-  void _log_printf(const char *format, ...);
-  #define log_printf(f, ...) _log_printf("[%s:%d] " f "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+  void _log(const char *format, ...);
+  #define log(f, ...) _log("[%s:%d] " f "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+  #define logEntered() _log("%s entered (%s %d)", __FUNCTION__, __FILE__, __LINE__)
+  #define logLeaving() _log("%s leaving (%s %d)", __FUNCTION__, __FILE__, __LINE__)
 #else
   #define log_init()
-  #define log_printf(...)
+  #define log(...)
+  #define logEntered()
+  #define logLeaving()
 #endif
 
 #endif  // __LOGGING_H__

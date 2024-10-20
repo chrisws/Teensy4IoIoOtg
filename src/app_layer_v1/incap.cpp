@@ -102,7 +102,7 @@ static void InCapConfigInternal(int incap_num, int double_prec, int mode, int cl
 }
 
 void InCapConfig(int incap_num, int double_prec, int mode, int clock) {
-  log_printf("InCapConfig(%d, %d, %d, %d)", incap_num, double_prec, mode, clock);
+  log("InCapConfig(%d, %d, %d, %d)", incap_num, double_prec, mode, clock);
   InCapConfigInternal(incap_num, double_prec, mode, clock, 1);
 }
 

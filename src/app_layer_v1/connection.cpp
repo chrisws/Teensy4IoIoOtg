@@ -30,8 +30,9 @@
  */
 
 #include "usb_host.h"
-#include "connection.h"
 #include "usb_android.h"
+#include "connection.h"
+#include "logging.h"
 
 #define CHANNEL_HANDLE_ACCESSORY 1
 #define CHANNEL_HANDLE_CDC 2
@@ -41,9 +42,9 @@ uint32_t format = USBHOST_SERIAL_8N1;
 
 USBHost usbHost;
 USBAndroid usbAndroid(usbHost);
-USBSerial_BigBuffer usbSerial(usbHost);
+USBSerial_BigBuffer usbSerial(usbHost, 1);
 
-CHANNEL_HANDLE openChannelHandle = 0;
+CHANNEL_HANDLE openChannelHandle = INVALID_CHANNEL_HANDLE;
 ChannelReceiveCallback callback = nullptr;
 
 // Define the buffer to use to copy between the two devices
@@ -71,7 +72,8 @@ void accessoryTask() {
 
 void ConnectionInit() {
   usbHost.begin();
-  usbSerial.begin(baud);
+  usbSerial.begin(baud, format);
+  usbSerial.setDTR(true);
 }
 
 void ConnectionTasks() {
@@ -95,11 +97,11 @@ bool ConnectionTypeSupported(CHANNEL_TYPE con) {
 bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
   bool result;
   switch (con) {
-  case CHANNEL_HANDLE_ACCESSORY:
+  case CHANNEL_TYPE::CHANNEL_TYPE_ACC:
     result = usbAndroid.connected();
     break;
-  case CHANNEL_HANDLE_CDC:
-    result = usbSerial.available();
+  case CHANNEL_TYPE::CHANNEL_TYPE_CDC_DEVICE:
+    result = true;
     break;
   default:
     result = false;
@@ -109,14 +111,14 @@ bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
 }
 
 CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelReceiveCallback cb) {
-  openChannelHandle = usbAndroid.isAccessoryMode() ? CHANNEL_HANDLE_ACCESSORY : 0;
   callback = cb;
+  openChannelHandle = usbAndroid.isAccessoryMode() ? CHANNEL_HANDLE_ACCESSORY : INVALID_CHANNEL_HANDLE;
   return openChannelHandle;
 }
 
 CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelReceiveCallback cb) {
-  openChannelHandle = usbSerial.available() ? CHANNEL_HANDLE_CDC : 0;
   callback = cb;
+  openChannelHandle = CHANNEL_HANDLE_CDC;
   return openChannelHandle;
 }
 
@@ -152,7 +154,7 @@ void ConnectionCloseChannel(CHANNEL_HANDLE ch) {
   if (ch == CHANNEL_HANDLE_ACCESSORY && usbAndroid.isAccessoryMode()) {
     usbAndroid.end();
   }
-  openChannelHandle = 0;
+  openChannelHandle = INVALID_CHANNEL_HANDLE;
 }
 
 int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {

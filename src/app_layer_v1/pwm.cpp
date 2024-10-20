@@ -51,9 +51,9 @@ void PWMInit() {
 }
 
 void SetPwmDutyCycle(int pwm_num, int dc, int fraction) {
-  log_printf("SetPwmDutyCycle(%d, %d, %d)", pwm_num, dc, fraction);
+  log("SetPwmDutyCycle(%d, %d, %d)", pwm_num, dc, fraction);
 }
 
 void SetPwmPeriod(int pwm_num, int period, int scale) {
-  log_printf("SetPwmPeriod(%d, %d, %d)", pwm_num, period, scale);
+  log("SetPwmPeriod(%d, %d, %d)", pwm_num, period, scale);
 }

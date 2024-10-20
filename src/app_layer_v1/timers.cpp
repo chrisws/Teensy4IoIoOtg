@@ -34,7 +34,7 @@
 #include "sync.h"
 
 void TimersInit() {
-  log_printf("TimersInit()");
+  log("TimersInit()");
 
   // The timers are initialized as follows:
   // T2, T5: sysclk / 256 = 62.5KHz

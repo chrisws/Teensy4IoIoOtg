@@ -55,7 +55,7 @@ DisableInterrupts::DisableInterrupts(unsigned priority) : _priority(priority), _
   // }
 }
 
-bool DisableInterrupts::once() {
+bool DisableInterrupts::latch() {
   bool result = _once;
   _once = false;
   return result;
