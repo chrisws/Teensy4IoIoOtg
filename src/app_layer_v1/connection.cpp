@@ -29,12 +29,10 @@
  *
  */
 
-#include "usb_host.h"
+#include <Arduino.h>
 #include "usb_android.h"
 #include "connection.h"
 #include "logging.h"
-
-#if !defined(USB_TEST)
 
 #define CHANNEL_HANDLE_ACCESSORY 1
 #define CHANNEL_HANDLE_CDC 2
@@ -42,10 +40,9 @@
 // baud rate setting is virtual when communicating over USB.
 uint32_t baud = 115200;
 
-USBHost usbHost;
-USBAndroid usbAndroid(usbHost);
-USBSerial_BigBuffer usbSerial(usbHost, 1);
+#if !defined(USB_TEST)
 
+USBAndroid usbAndroid;
 CHANNEL_HANDLE openChannelHandle = INVALID_CHANNEL_HANDLE;
 ChannelReceiveCallback callback = nullptr;
 
@@ -54,7 +51,7 @@ uint8_t cdcBuffer[CDC_RX_SIZE_480];
 
 void cdcTask() {
   if (usbSerial.available()) {
-    int bytesRead = usbSerial.readBytes(cdcBuffer, sizeof(cdcBuffer));
+    int bytesRead = Serial.readBytes(cdcBuffer, sizeof(cdcBuffer));
     if (bytesRead > 0 && callback) {
       // Process the incoming data
       callback(cdcBuffer, bytesRead);
@@ -73,15 +70,13 @@ void accessoryTask() {
 }
 
 void ConnectionInit() {
-  usbHost.begin();
-  delay(2000);
-  usbSerial.begin(baud);
+  delay(1000);
+  Serial.begin(baud);
+  while (!Serial);
 }
 
 void ConnectionTasks() {
   // Poll the USB host to handle connected devices
-  usbHost.Task();
-
   switch (openChannelHandle) {
   case CHANNEL_HANDLE_ACCESSORY:
     accessoryTask();
@@ -132,7 +127,7 @@ void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size) {
     }
     break;
   case CHANNEL_HANDLE_CDC:
-    usbSerial.write(data, size);
+    Serial.write(data, size);
     break;
   }
 }
@@ -144,7 +139,7 @@ bool ConnectionCanSend(CHANNEL_HANDLE ch) {
     result = usbAndroid.isAccessoryMode();
     break;
   case CHANNEL_HANDLE_CDC:
-    result = usbSerial.availableForWrite() > 0;
+    result = Serial.availableForWrite() > 0;
     break;
   default:
     result = false;
@@ -177,33 +172,29 @@ int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {
 
 void ConnectionShutdownAll() {
   usbAndroid.end();
-  usbSerial.end();
+  Serial.end();
 }
 
 #else
 
-USBHost usbHost;
-USBSerial usbSerial(usbHost);
-
 void __setup() {
   log_init();
-  usbHost.begin();
-  delay(2000);
 
-  if (usbSerial) {
-    usbSerial.begin(baud);
-    while (!usbSerial && millis() < 5000) {}
-    usbSerial.println("USB Serial initialized!");
-  }
+  Serial.begin(baud);
+  while (!Serial);
+  Serial.println("USB Serial initialized!");
 }
 
 void __loop() {
-  usbHost.Task();
   blink(1000);
-  if (usbSerial && usbSerial.availableForWrite()) {
-    usbSerial.println("Data from Teensy USBSerial.");
-  } else {
-    Serial.println("USB Serial not available for write.");
+  while (Serial.available()) {
+    // Read the incoming byte
+    char incomingByte = Serial.read();
+    Serial.print("Received: ");
+    Serial.println(incomingByte);
+  }
+  if (Serial.availableForWrite()) {
+    Serial.println("Data from Teensy USBSerial.");
   }
   delay(1000);
 }

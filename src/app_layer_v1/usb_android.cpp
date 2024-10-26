@@ -50,7 +50,7 @@ const char* accessoryDescs[6] = {
   descSerial
 };
 
-USBAndroid::USBAndroid(USBHost &host) {
+USBAndroid::USBAndroid() {
 }
 
 bool USBAndroid::connected() {

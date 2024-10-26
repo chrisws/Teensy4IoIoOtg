@@ -36,7 +36,7 @@
 
 class USBAndroid {
   public:
-  USBAndroid(USBHost &host);
+  USBAndroid();
 
   bool connected();
   bool isAccessoryMode();
