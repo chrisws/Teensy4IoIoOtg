@@ -47,7 +47,7 @@ void SyncInit() {
 }
 
 DisableInterrupts::DisableInterrupts(unsigned priority) : _priority(priority), _once(true) {
-  __disable_irq();
+  //__disable_irq();
   // for (int i = 0; i < NVIC_NUM_INTERRUPTS; i++) {
   //   if (g_priority[i] <= _priority) {
   //     //NVIC_DisableIRQ(i);
@@ -62,7 +62,7 @@ bool DisableInterrupts::latch() {
 }
 
 DisableInterrupts::~DisableInterrupts() {
-  __enable_irq();
+  //__enable_irq();
   // for (int i = 0; i < NVIC_NUM_INTERRUPTS; i++) {
   //   if (g_priority[i] <= _priority) {
   //     // NVIC_EnableIRQ(i);

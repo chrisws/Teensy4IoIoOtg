@@ -115,15 +115,6 @@ void SoftReset() {
     I2CInit();
     InCapInit();
     SequencerInit();
-
-    // blink the led to indicate we are here
-    pinMode(13, OUTPUT);
-    for (int i = 0; i < 5; i++) {
-      digitalWriteFast(13, HIGH);
-      delay(100);
-      digitalWriteFast(13, LOW);
-      delay(100);
-    }
   }
 }
 

@@ -28,9 +28,14 @@ set(SOURCES
   byte_queue.cpp
   connection.cpp
   usb_android.cpp
+  main.cpp
 )
 
 add_library(app_layer_v1 STATIC ${SOURCES})
+
+if (USB_TEST)
+   add_definitions(-DUSB_TEST)
+endif()
 
 target_compile_options(app_layer_v1 PRIVATE -Wall)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/src)

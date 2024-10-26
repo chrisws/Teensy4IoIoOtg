@@ -25,6 +25,7 @@ set(SOURCES
  ${SRC}/rawhid.cpp
  ${SRC}/SerEMU.cpp
  ${SRC}/serial.cpp
+ ${SRC}/print.cpp
 )
 
 add_library(USBHost_t36 STATIC ${SOURCES})

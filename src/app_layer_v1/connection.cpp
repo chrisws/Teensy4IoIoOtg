@@ -34,11 +34,13 @@
 #include "connection.h"
 #include "logging.h"
 
+#if !defined(USB_TEST)
+
 #define CHANNEL_HANDLE_ACCESSORY 1
 #define CHANNEL_HANDLE_CDC 2
 
-uint32_t baud = 1000000;
-uint32_t format = USBHOST_SERIAL_8N1;
+// baud rate setting is virtual when communicating over USB.
+uint32_t baud = 115200;
 
 USBHost usbHost;
 USBAndroid usbAndroid(usbHost);
@@ -72,8 +74,8 @@ void accessoryTask() {
 
 void ConnectionInit() {
   usbHost.begin();
-  usbSerial.begin(baud, format);
-  usbSerial.setDTR(true);
+  delay(2000);
+  usbSerial.begin(baud);
 }
 
 void ConnectionTasks() {
@@ -164,7 +166,7 @@ int ConnectionGetMaxPacket(CHANNEL_HANDLE ch) {
     result = usbAndroid.maxPacketSize();
     break;
   case CHANNEL_HANDLE_CDC:
-    // high-speed USB 
+    // high-speed USB
     result = CDC_RX_SIZE_480;
     break;
   default:
@@ -177,3 +179,33 @@ void ConnectionShutdownAll() {
   usbAndroid.end();
   usbSerial.end();
 }
+
+#else
+
+USBHost usbHost;
+USBSerial usbSerial(usbHost);
+
+void __setup() {
+  log_init();
+  usbHost.begin();
+  delay(2000);
+
+  if (usbSerial) {
+    usbSerial.begin(baud);
+    while (!usbSerial && millis() < 5000) {}
+    usbSerial.println("USB Serial initialized!");
+  }
+}
+
+void __loop() {
+  usbHost.Task();
+  blink(1000);
+  if (usbSerial && usbSerial.availableForWrite()) {
+    usbSerial.println("Data from Teensy USBSerial.");
+  } else {
+    Serial.println("USB Serial not available for write.");
+  }
+  delay(1000);
+}
+
+#endif

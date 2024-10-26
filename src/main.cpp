@@ -35,6 +35,8 @@
 #include "app_layer_v1/logging.h"
 #include "app_layer_v1/sync.h"
 
+#if !defined(USB_TEST)
+
 typedef enum {
   STATE_INIT,
   STATE_OPEN_CHANNEL,
@@ -67,15 +69,11 @@ void AppCallback(const uint8_t *data, uint32_t data_len) {
 
 static inline CHANNEL_HANDLE OpenAvailableChannel() {
   CHANNEL_HANDLE result = INVALID_CHANNEL_HANDLE;
-  if (ConnectionTypeSupported(CHANNEL_TYPE_ACC)
-      && ConnectionCanOpenChannel(CHANNEL_TYPE_ACC)) {
+  if (ConnectionTypeSupported(CHANNEL_TYPE_ACC) && ConnectionCanOpenChannel(CHANNEL_TYPE_ACC)) {
     result = ConnectionOpenChannelAccessory(&AppCallback);
   }
-  if (result == INVALID_CHANNEL_HANDLE
-      && ConnectionTypeSupported(CHANNEL_TYPE::CHANNEL_TYPE_CDC_DEVICE)
-      && ConnectionCanOpenChannel(CHANNEL_TYPE::CHANNEL_TYPE_CDC_DEVICE)) {
+  else {
     result = ConnectionOpenChannelCdc(&AppCallback);
-    log("open cdc channel");
   }
   return result;
 }
@@ -123,3 +121,16 @@ extern "C" void loop() {
     break;
   }
 }
+
+#else
+
+extern "C" void setup() {
+  __setup();
+}
+
+extern "C" void loop() {
+  __loop();
+}
+
+#endif
+

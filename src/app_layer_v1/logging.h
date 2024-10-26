@@ -32,17 +32,22 @@
 #ifndef __LOGGING_H__
 #define __LOGGING_H__
 
+#include <cstdint>
+
 #if defined(ENABLE_LOGGING)
   void log_init();
   void _log(const char *format, ...);
+  void _blink(uint32_t rate);
   #define log(f, ...) _log("[%s:%d] " f "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
   #define logEntered() _log("%s entered (%s %d)", __FUNCTION__, __FILE__, __LINE__)
   #define logLeaving() _log("%s leaving (%s %d)", __FUNCTION__, __FILE__, __LINE__)
+  #define blink(n) _blink(n);
 #else
   #define log_init()
   #define log(...)
   #define logEntered()
   #define logLeaving()
+  #define blink(n)
 #endif
 
 #endif  // __LOGGING_H__

@@ -85,4 +85,9 @@ bool ConnectionCanSend(CHANNEL_HANDLE ch);
 void ConnectionCloseChannel(CHANNEL_HANDLE ch);
 int ConnectionGetMaxPacket(CHANNEL_HANDLE ch);
 
+#if defined(USB_TEST)
+void __setup();
+void __loop();
+#endif
+
 #endif  // __CONNECTION_H__
