@@ -16,4 +16,4 @@ function load() {
     ./modules/teensy_loader_cli/teensy_loader_cli --mcu=IMXRT1062 -w -v build/firmware.hex
 }
 
-(cd build && make) && load && show && run
+(cd build && make) && load && show

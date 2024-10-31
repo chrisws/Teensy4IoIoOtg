@@ -31,16 +31,18 @@
 
 #include <assert.h>
 #include <string.h>
+#include <cstdio>
 
 #include "byte_queue.h"
 #include "logging.h"
 
 void ByteQueueOverflow() {
   log("ByteQueueOverflow");
+  assert(false);
 }
 
 void ByteQueuePush(ByteQueue *q, uint8_t b) {
-  if (q->size == q->capacity) {
+  if (q->size + 1 == q->capacity) {
     ByteQueueOverflow();
     return;
   }
@@ -88,15 +90,15 @@ void ByteQueuePeek(ByteQueue *q, const uint8_t **data, int *size) {
   if (!q->size) {
     *size = 0;
   } else if (q->write_cursor <= q->read_cursor) {
-    // tail is advanced of the head
-    *size = (q->capacity - q->read_cursor) + q->write_cursor;
+    // tail is advanced of the head (size here is less than available)
+    *size = q->capacity - q->read_cursor;
   } else {
     *size = q->write_cursor - q->read_cursor;
   }
 }
 
 void ByteQueuePeekMax(ByteQueue *q, int max_size, const uint8_t **data1, int *size1, const uint8_t **data2, int *size2) {
-  int size = q->size;  // create local copy, this might change!
+  int size = q->size;
   if (max_size > size) {
     max_size = size;
   }
@@ -107,6 +109,7 @@ void ByteQueuePeekMax(ByteQueue *q, int max_size, const uint8_t **data1, int *si
     *size2 = max_size - *size1;
   } else {
     *size1 = max_size;
+    *data2 = nullptr;
     *size2 = 0;
   }
 }

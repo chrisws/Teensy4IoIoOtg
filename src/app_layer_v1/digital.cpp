@@ -29,14 +29,54 @@
  *
  */
 
+#include <Arduino.h>
 #include "digital.h"
+#include "protocol.h"
+#include "logging.h"
 
 void SetDigitalOutLevel(int pin, int value) {
+  digitalWrite(pin, value ? HIGH : LOW);
 }
 
+/*
+  The Teensy 4.0, which is based on the NXP i.MX RT1062
+  microcontroller, doesn't have a direct equivalent to the "Change
+  Notification" (CN) interrupts found in PIC
+  microcontrollers. However, it does support external interrupts on
+  its GPIO pins, which can be configured to trigger on rising,
+  falling, or change events.
+
+  You can use the attachInterrupt() function in the Arduino IDE (or the
+  Teensyduino extension) to handle these interrupts. For detecting
+  changes on a pin, you would typically configure an interrupt that
+  triggers on both rising and falling edges to achieve similar
+  functionality to CN interrupts.
+  
+  If you need to monitor multiple pins for changes, you would have to
+  set up individual interrupts for each pin, as the Teensy does not have
+  a built-in mechanism to monitor multiple pins with a single interrupt
+  like CN interrupts do in PIC microcontrollers.
+
+*/
+
+// fixme: ~/github/ioio/firmware/app_layer_v1/digital.c
+
 void SetChangeNotify(int pin, int changeNotify) {
+
+  // NUM_DIGITAL_PINS
+  //  void attachInterrupt(uint8_t pin, void (*function)(void), int mode);
+// Remove a previously configured attachInterrupt() function from a pin.
+//void detachInterrupt(uint8_t pin);
+
+  
 }
 
 static void SendDigitalInStatusMessage(int pin, int value) {
+  log("SendDigitalInStatusMessage(%d, %d)", pin, value);
+  OUTGOING_MESSAGE msg;
+  msg.type = REPORT_DIGITAL_IN_STATUS;
+  msg.args.report_digital_in_status.pin = pin;
+  msg.args.report_digital_in_status.level = value;
+  AppProtocolSendMessage(&msg);
 }
 

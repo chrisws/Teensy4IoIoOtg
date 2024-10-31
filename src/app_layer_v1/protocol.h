@@ -49,9 +49,9 @@
 #include "protocol_defs.h"
 
 // Human-readable string describing app firmware version.
-#define FW_IMPL_VER "IOIOT4001"
-#define BL_IMPL_VER "IOIOT4001"
-#define HW_IMPL_VER "IOIOT4001"
+#define FW_IMPL_VER "IOIO0506"
+#define BL_IMPL_VER "IOIO0402"
+#define HW_IMPL_VER "SPRK0020"
 
 // Initialize this module.
 // This function completely resets the module's state and can be called even
@@ -68,6 +68,9 @@ void AppProtocolTasks(CHANNEL_HANDLE h);
 // Process incoming protocol data.
 // data may not be nullptr.
 bool AppProtocolHandleIncoming(const uint8_t *data, uint32_t data_len);
+
+// Send logging text
+void AppProtocolSendLogging(const uint8_t *msg, int size);
 
 // Send a protocol message.
 // This is not intended for usage of the bootstrap code that glues the protocol

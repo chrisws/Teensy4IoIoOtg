@@ -34,13 +34,14 @@
 #include <Arduino.h>
 #include "logging.h"
 #include "connection.h"
+#include "protocol.h"
 
 #include <cstdio>
 #include <cstring>
 #include <stdarg.h>
 
 #define MAX_BUFFER_SIZE 1024
-char _buffer[MAX_BUFFER_SIZE];
+uint8_t _buffer[MAX_BUFFER_SIZE];
 long _lastMillis = 0;
 bool _ledOn = true;
 
@@ -53,7 +54,7 @@ void _blink(uint32_t rate) {
 }
 
 void log_init() {
-  pinMode(LED_BUILTIN, OUTPUT);
+  // pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void _log(const char *format, ...) {
@@ -68,16 +69,7 @@ void _log(const char *format, ...) {
     vsnprintf(_buffer, size + 1, format, args);
     va_end(args);
     _buffer[size] = '\0';
-
-    int i = size - 1;
-    while (i >= 0 && (_buffer[i] == ' ' ||
-                      _buffer[i] == '\t' ||
-                      _buffer[i] == '\n' ||
-                      _buffer[i] == '\r')) {
-      _buffer[i--] = '\0';
-    }
-
-    Serial.println(_buffer);
+    AppProtocolSendLogging(_buffer, size);
   }
 }
 

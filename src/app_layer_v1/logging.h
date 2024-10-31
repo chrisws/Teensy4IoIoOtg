@@ -38,7 +38,7 @@
   void log_init();
   void _log(const char *format, ...);
   void _blink(uint32_t rate);
-  #define log(f, ...) _log("[%s:%d] " f "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+  #define log(f, ...) _log("[%s:%d] " f, __FILE__, __LINE__, ##__VA_ARGS__)
   #define logEntered() _log("%s entered (%s %d)", __FUNCTION__, __FILE__, __LINE__)
   #define logLeaving() _log("%s leaving (%s %d)", __FUNCTION__, __FILE__, __LINE__)
   #define blink(n) _blink(n);

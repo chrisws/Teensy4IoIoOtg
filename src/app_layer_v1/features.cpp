@@ -47,7 +47,7 @@
 
 void SetPinDigitalOut(int pin, int value, int open_drain) {
   log("SetPinDigitalOut(%d, %d, %d)", pin, value, open_drain);
-
+  pinMode(pin, OUTPUT);
 }
 
 void SetPinDigitalIn(int pin, int pull) {

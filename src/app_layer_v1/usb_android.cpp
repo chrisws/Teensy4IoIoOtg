@@ -79,3 +79,13 @@ void USBAndroid::beginAccessory() {
 void USBAndroid::end() {
 }
 
+// void accessoryTask() {
+//   if (usbAndroid.connected()) {
+//     if (usbAndroid.isAccessoryMode()) {
+//       usbAndroid.readWrite(callback);
+//     } else {
+//       usbAndroid.beginAccessory();
+//     }
+//   }
+// }
+

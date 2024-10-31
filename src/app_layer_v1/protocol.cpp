@@ -140,21 +140,18 @@ typedef enum {
   STATE_CLOSED
 } STATE;
 
-// Not enough RAM in the 24K RAM (old prototypes) platforms, since the
-// introduction of the motion control library.
-#define QUEUE_SIZE 8192
-
-DEFINE_STATIC_BYTE_QUEUE(tx_queue, QUEUE_SIZE);
-static int bytes_out;
-static int max_packet;
-static STATE state;
-
 typedef enum {
   WAIT_TYPE,
   WAIT_ARGS,
   WAIT_VAR_ARGS
 } RX_MESSAGE_STATE;
 
+// Not enough RAM in the 24K RAM (old prototypes) platforms, since the
+// introduction of the motion control library.
+#define QUEUE_SIZE 8192
+
+DEFINE_STATIC_BYTE_QUEUE(tx_queue, QUEUE_SIZE);
+static STATE state;
 static INCOMING_MESSAGE rx_msg;
 static uint32_t rx_buffer_cursor;
 static uint32_t rx_message_remaining;
@@ -171,11 +168,9 @@ static inline uint8_t IncomingVarArgSize(const INCOMING_MESSAGE *msg) {
 
   case SPI_MASTER_REQUEST:
     if (msg->args.spi_master_request.data_size_neq_total) {
-      return msg->args.spi_master_request.data_size
-        + msg->args.spi_master_request.res_size_neq_total;
+      return msg->args.spi_master_request.data_size + msg->args.spi_master_request.res_size_neq_total;
     } else {
-      return msg->args.spi_master_request.total_size
-        + msg->args.spi_master_request.res_size_neq_total;
+      return msg->args.spi_master_request.total_size + msg->args.spi_master_request.res_size_neq_total;
     }
 
   case I2C_WRITE_READ:
@@ -199,12 +194,10 @@ static inline uint8_t IncomingVarArgSize(const INCOMING_MESSAGE *msg) {
 }
 
 void AppProtocolInit(CHANNEL_HANDLE h) {
-  bytes_out = 0;
   rx_buffer_cursor = 0;
   rx_message_remaining = 1;
   rx_message_state = WAIT_TYPE;
   ByteQueueClear(&tx_queue);
-  max_packet = ConnectionGetMaxPacket(h);
   state = STATE_OPEN;
 
   OUTGOING_MESSAGE msg;
@@ -216,6 +209,15 @@ void AppProtocolInit(CHANNEL_HANDLE h) {
   memcpy(msg.args.establish_connection.fw_impl_ver, FW_IMPL_VER, 8);
 
   AppProtocolSendMessage(&msg);
+}
+
+void AppProtocolSendLogging(const uint8_t *msg, int size) {
+  if (state != STATE_OPEN) return;
+  PRIORITY(1) {
+    ByteQueuePush(&tx_queue, DEBUG_OUT);
+    ByteQueuePushBuffer(&tx_queue, msg, size);
+    ByteQueuePush(&tx_queue, '\n');
+  }
 }
 
 void AppProtocolSendMessage(const OUTGOING_MESSAGE *msg) {
@@ -252,23 +254,24 @@ void AppProtocolTasks(CHANNEL_HANDLE h) {
     state = STATE_CLOSED;
     return;
   }
+
   UARTTasks();
   SPITasks();
   I2CTasks();
   ICSPTasks();
   SequencerTasks();
-  if (ConnectionCanSend(h)) {
+  
+  int available = ConnectionCanSend(h);
+  if (available) {
     const uint8_t *data;
-    if (bytes_out) {
-      ByteQueueDiscard(&tx_queue, bytes_out);
-      bytes_out = 0;
+    int size;
+    ByteQueuePeek(&tx_queue, &data, &size);
+    if (size > available) {
+      size = available;
     }
-    ByteQueuePeek(&tx_queue, &data, &bytes_out);
-    if (bytes_out > 0) {
-      if (bytes_out > max_packet) {
-        bytes_out = max_packet;
-      }
-      ConnectionSend(h, data, bytes_out);
+    if (size > 0) {
+      ByteQueueDiscard(&tx_queue, size);
+      ConnectionSend(h, data, size);
     }
   }
 }
@@ -375,8 +378,7 @@ static bool MessageDone() {
 
   case SPI_MASTER_REQUEST:
     CHECK(rx_msg.args.spi_master_request.spi_num < NUM_SPI_MODULES);
-    CHECK(rx_msg.args.spi_master_request.ss_pin < NUM_PINS);
-    {
+    CHECK(rx_msg.args.spi_master_request.ss_pin < NUM_PINS); {
       const uint8_t total_size = rx_msg.args.spi_master_request.total_size + 1;
       const uint8_t data_size = rx_msg.args.spi_master_request.data_size_neq_total
                                 ? rx_msg.args.spi_master_request.data_size
@@ -428,8 +430,7 @@ static bool MessageDone() {
     break;
 
   case I2C_WRITE_READ:
-    CHECK(rx_msg.args.i2c_write_read.i2c_num < NUM_I2C_MODULES);
-    {
+    CHECK(rx_msg.args.i2c_write_read.i2c_num < NUM_I2C_MODULES); {
       unsigned int addr;
       if (rx_msg.args.i2c_write_read.ten_bit_addr) {
         addr = rx_msg.args.i2c_write_read.addr_lsb;

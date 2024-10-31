@@ -42,10 +42,6 @@ add_subdirectory(src/app_layer_v1)
 # Add executable with the list of source files
 add_executable(${TARGET}.elf src/main.cpp)
 
-if (USB_TEST)
-   add_definitions(-DUSB_TEST)
-endif()
-
 # enable all warnings in main.cpp
 target_compile_options(${TARGET}.elf PRIVATE -Wall)
 

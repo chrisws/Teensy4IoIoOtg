@@ -53,10 +53,12 @@
 typedef int CHANNEL_HANDLE;
 
 #define INVALID_CHANNEL_HANDLE (-1)
+#define CHANNEL_HANDLE_ACCESSORY 1
+#define CHANNEL_HANDLE_CDC 2
 
 typedef enum {
   CHANNEL_TYPE_ACC,
-  CHANNEL_TYPE_CDC_DEVICE,
+  CHANNEL_TYPE_CDC,
 } CHANNEL_TYPE;
 
 // data != NULL -> incoming data
@@ -76,18 +78,22 @@ void ConnectionTasks();
 // Close USB connection. All existing connections will be gracefully closed.
 void ConnectionShutdownAll();
 
+// whether CHANNEL_TYPE is supported
 bool ConnectionTypeSupported(CHANNEL_TYPE con);
-bool ConnectionCanOpenChannel(CHANNEL_TYPE con);
-CHANNEL_HANDLE ConnectionOpenChannelAccessory(ChannelReceiveCallback cb);
-CHANNEL_HANDLE ConnectionOpenChannelCdc(ChannelReceiveCallback cb);
-void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size);
-bool ConnectionCanSend(CHANNEL_HANDLE ch);
-void ConnectionCloseChannel(CHANNEL_HANDLE ch);
-int ConnectionGetMaxPacket(CHANNEL_HANDLE ch);
 
-#if defined(USB_TEST)
-void __setup();
-void __loop();
-#endif
+// whether CHANNEL_TYPE can be opened
+bool ConnectionCanOpenChannel(CHANNEL_TYPE con);
+
+// opens the given CHANNEL_TYPE
+CHANNEL_HANDLE ConnectionOpenChannel(CHANNEL_TYPE con, ChannelReceiveCallback cb);
+
+// sends data along with given channel
+void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size);
+
+// returns the number of bytes available to send
+int ConnectionCanSend(CHANNEL_HANDLE ch);
+
+// closes the channel
+void ConnectionCloseChannel(CHANNEL_HANDLE ch);
 
 #endif  // __CONNECTION_H__
