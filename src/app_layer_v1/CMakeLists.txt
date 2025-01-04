@@ -33,10 +33,15 @@ add_library(app_layer_v1 STATIC ${SOURCES})
 
 target_compile_options(app_layer_v1 PRIVATE -Wall)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/src/${LOGGING_MODULE})
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/cores/teensy4)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/ADC)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SPI)
 target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/Wire)
-target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/USBHost_t36)
-target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SdFat/src)
+
+#
+# android support
+#
+#target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/USBHost_t36)
+#target_include_directories(app_layer_v1 PRIVATE ${CMAKE_SOURCE_DIR}/modules/SdFat/src)
 

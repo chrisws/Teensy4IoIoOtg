@@ -30,6 +30,7 @@ set(CMAKE_EXE_LINKER_FLAGS "-Os -Wl,--gc-sections,--relax ${SPECS} ${CPU_OPTIONS
 set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
 set(CMAKE_C_COMPILER arm-none-eabi-gcc)
 set(CMAKE_SIZE arm-none-eabi-size)
+set(LOGGING_MODULE "Adafruit_SSD1306")
 
 # Include the module directories
 add_subdirectory(src/core)
@@ -38,6 +39,7 @@ add_subdirectory(src/SPI)
 add_subdirectory(src/Wire)
 add_subdirectory(src/USBHost_t36)
 add_subdirectory(src/app_layer_v1)
+add_subdirectory(src/${LOGGING_MODULE})
 
 # Add executable with the list of source files
 add_executable(${TARGET}.elf src/main.cpp)
@@ -46,7 +48,7 @@ add_executable(${TARGET}.elf src/main.cpp)
 target_compile_options(${TARGET}.elf PRIVATE -Wall)
 
 # Link against the CMSIS DSP library
-target_link_libraries(${TARGET}.elf app_layer_v1 USBHost_t36 Wire SPI ADC core ${CMAKE_CURRENT_SOURCE_DIR}/modules/CMSIS-DSP/build/Source/libCMSISDSP.a -lm)
+target_link_libraries(${TARGET}.elf app_layer_v1 ${LOGGING_MODULE} USBHost_t36 Wire SPI ADC core ${CMAKE_CURRENT_SOURCE_DIR}/modules/CMSIS-DSP/build/Source/libCMSISDSP.a -lm)
 
 # Post-build step to create HEX file using objcopy
 add_custom_command(TARGET ${TARGET}.elf POST_BUILD

@@ -106,7 +106,9 @@ extern "C" void loop() {
     break;
 
   case STATE_CONNECTED:
-    AppProtocolTasks(handle);
+    if (!AppProtocolTasks(handle)) {
+      state = STATE_INIT;
+    }
     break;
 
   case STATE_ERROR:

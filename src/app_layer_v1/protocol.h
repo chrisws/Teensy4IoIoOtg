@@ -63,7 +63,7 @@ void AppProtocolInit(CHANNEL_HANDLE h);
 // Call this function peridically for providing context to this module.
 // h is a channel handle, which will be used for sending outgoing protocol
 // messages.
-void AppProtocolTasks(CHANNEL_HANDLE h);
+bool AppProtocolTasks(CHANNEL_HANDLE h);
 
 // Process incoming protocol data.
 // data may not be nullptr.

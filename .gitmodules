@@ -25,3 +25,18 @@
 [submodule "modules/CMSIS-DSP"]
 	path = modules/CMSIS-DSP
 	url = https://github.com/ARM-software/CMSIS-DSP.git
+[submodule "modules/st7735s"]
+	path = modules/st7735s
+	url = https://github.com/cvetaevvitaliy/st7735s.git
+[submodule "modules/ST7735_t3"]
+	path = modules/ST7735_t3
+	url = https://github.com/PaulStoffregen/ST7735_t3.git
+[submodule "modules/Adafruit_SSD1306"]
+	path = modules/Adafruit_SSD1306
+	url = https://github.com/adafruit/Adafruit_SSD1306.git
+[submodule "modules/Adafruit-GFX-Library"]
+	path = modules/Adafruit-GFX-Library
+	url = https://github.com/adafruit/Adafruit-GFX-Library
+[submodule "modules/Adafruit_BusIO"]
+	path = modules/Adafruit_BusIO
+	url = https://github.com/adafruit/Adafruit_BusIO

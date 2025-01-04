@@ -31,10 +31,8 @@
 
 #ifdef ENABLE_LOGGING
 
-#include <Arduino.h>
 #include "logging.h"
-#include "connection.h"
-#include "protocol.h"
+#include "lcd_printf.h"
 
 #include <cstdio>
 #include <cstring>
@@ -42,19 +40,9 @@
 
 #define MAX_BUFFER_SIZE 1024
 uint8_t _buffer[MAX_BUFFER_SIZE];
-long _lastMillis = 0;
-bool _ledOn = true;
-
-void _blink(uint32_t rate) {
-  if (millis() - _lastMillis > (_ledOn ? 100 : rate)) {
-    _ledOn = !_ledOn;
-    _lastMillis = millis();
-    digitalWriteFast(LED_BUILTIN, _ledOn ? HIGH : LOW);
-  }
-}
 
 void log_init() {
-  // pinMode(LED_BUILTIN, OUTPUT);
+  lcd_setup();
 }
 
 void _log(const char *format, ...) {
@@ -66,10 +54,10 @@ void _log(const char *format, ...) {
   if (size < MAX_BUFFER_SIZE) {
     _buffer[0] = '\0';
     va_start(args, format);
-    vsnprintf(_buffer, size + 1, format, args);
+    vsnprintf((char *)_buffer, size + 1, format, args);
     va_end(args);
     _buffer[size] = '\0';
-    AppProtocolSendLogging(_buffer, size);
+    lcd_printf(_buffer, size);
   }
 }
 

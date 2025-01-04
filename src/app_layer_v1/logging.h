@@ -33,14 +33,16 @@
 #define __LOGGING_H__
 
 #include <cstdint>
+#include <cstring>
 
 #if defined(ENABLE_LOGGING)
   void log_init();
   void _log(const char *format, ...);
   void _blink(uint32_t rate);
-  #define log(f, ...) _log("[%s:%d] " f, __FILE__, __LINE__, ##__VA_ARGS__)
-  #define logEntered() _log("%s entered (%s %d)", __FUNCTION__, __FILE__, __LINE__)
-  #define logLeaving() _log("%s leaving (%s %d)", __FUNCTION__, __FILE__, __LINE__)
+  #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+  #define log(f, ...) _log("[%s:%d] " f, __FILENAME__, __LINE__, ##__VA_ARGS__)
+  #define logEntered() _log("%s entered (%s %d)", __FUNCTION__, __FILENAME__, __LINE__)
+  #define logLeaving() _log("%s leaving (%s %d)", __FUNCTION__, __FILENAME__, __LINE__)
   #define blink(n) _blink(n);
 #else
   #define log_init()

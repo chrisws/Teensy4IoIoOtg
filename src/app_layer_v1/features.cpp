@@ -48,6 +48,7 @@
 void SetPinDigitalOut(int pin, int value, int open_drain) {
   log("SetPinDigitalOut(%d, %d, %d)", pin, value, open_drain);
   pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);
 }
 
 void SetPinDigitalIn(int pin, int pull) {
@@ -88,10 +89,12 @@ void SetPinInCap(int pin, int incap_num, int enable) {
 
 static void PinsInit() {
   // LED pin: output, open-drain, high (off)
-  SetPinDigitalOut(0, 1, 1);
-  for (int i = 1; i < NUM_PINS; ++i) {
+  SetPinDigitalOut(LED_BUILTIN, 1, 1);
+  for (int i = 0; i < NUM_PINS; ++i) {
     // all other pins: input, no-pull
-    SetPinDigitalIn(i, 0);
+    if (i != LED_BUILTIN) {
+      SetPinDigitalIn(i, 0);
+    }
   }
 }
 

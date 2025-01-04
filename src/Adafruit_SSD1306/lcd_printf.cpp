@@ -29,64 +29,41 @@
  *
  */
 
-#include <Arduino.h>
-#include "connection.h"
-#include "logging.h"
+#include "lcd_printf.h"
 
-ChannelReceiveCallback _callback = nullptr;
-char _readBuffer[CDC_RX_SIZE_480];
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-void ConnectionInit() {
+// see: https://www.pjrc.com/teensy/td_libs_SSD1306.html
+// https://core-electronics.com.au/piicodev-oled-display-module-128x64-ssd1306.html#guides
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET    -1
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+
+void lcd_setup() {
+  // Initialize the display with the updated 'begin()' function
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C, false, true)) {
+    Serial.println(F("SSD1306 initialization failed"));
+    // Halt if initialization fails
+    for (;;);  
+  }
+
+  display.display();
   delay(1000);
-  // should match SerialPortIOIOConnection.java
-  Serial.begin(115200);
-  while (!Serial);
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
 }
 
-void ConnectionTasks() {
-  if (Serial.available()) {
-    int bytesRead = Serial.readBytes(_readBuffer, sizeof(_readBuffer));
-    if (bytesRead > 0 && _callback) {
-      _callback((uint8_t *)_readBuffer, bytesRead);
-    }
-  }
+void lcd_printf(const uint8_t *msg, int size) {
+  display.print(F(msg));
+  display.startscrolldiagleft(0x00, 0x00);
+  display.display();
+  display.stopscroll();
 }
-
-bool ConnectionTypeSupported(CHANNEL_TYPE con) {
-  return con == CHANNEL_TYPE::CHANNEL_TYPE_CDC;
-}
-
-bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
-  return con == CHANNEL_TYPE::CHANNEL_TYPE_CDC;
-}
-
-CHANNEL_HANDLE ConnectionOpenChannel(CHANNEL_TYPE con, ChannelReceiveCallback cb) {
-  CHANNEL_HANDLE result;
-  if (con == CHANNEL_TYPE::CHANNEL_TYPE_CDC) {
-    _callback = cb;
-    result = CHANNEL_HANDLE_CDC;
-  } else {
-    result = INVALID_CHANNEL_HANDLE;
-  }
-  return result;
-}
-
-void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size) {
-  if (ch == CHANNEL_HANDLE_CDC) {
-    Serial.write(data, size);
-  }
-}
-
-int ConnectionCanSend(CHANNEL_HANDLE ch) {
-  int result;
-  if (ch == CHANNEL_HANDLE_CDC) {
-    result = Serial.availableForWrite();
-  } else {
-    result = 0;
-  }
-  return result;
-}
-
-void ConnectionCloseChannel(CHANNEL_HANDLE ch) {
-}
-

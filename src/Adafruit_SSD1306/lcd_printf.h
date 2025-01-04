@@ -29,64 +29,9 @@
  *
  */
 
-#include <Arduino.h>
-#include "connection.h"
-#include "logging.h"
+#pragma once
 
-ChannelReceiveCallback _callback = nullptr;
-char _readBuffer[CDC_RX_SIZE_480];
+#include <cstdint>
 
-void ConnectionInit() {
-  delay(1000);
-  // should match SerialPortIOIOConnection.java
-  Serial.begin(115200);
-  while (!Serial);
-}
-
-void ConnectionTasks() {
-  if (Serial.available()) {
-    int bytesRead = Serial.readBytes(_readBuffer, sizeof(_readBuffer));
-    if (bytesRead > 0 && _callback) {
-      _callback((uint8_t *)_readBuffer, bytesRead);
-    }
-  }
-}
-
-bool ConnectionTypeSupported(CHANNEL_TYPE con) {
-  return con == CHANNEL_TYPE::CHANNEL_TYPE_CDC;
-}
-
-bool ConnectionCanOpenChannel(CHANNEL_TYPE con) {
-  return con == CHANNEL_TYPE::CHANNEL_TYPE_CDC;
-}
-
-CHANNEL_HANDLE ConnectionOpenChannel(CHANNEL_TYPE con, ChannelReceiveCallback cb) {
-  CHANNEL_HANDLE result;
-  if (con == CHANNEL_TYPE::CHANNEL_TYPE_CDC) {
-    _callback = cb;
-    result = CHANNEL_HANDLE_CDC;
-  } else {
-    result = INVALID_CHANNEL_HANDLE;
-  }
-  return result;
-}
-
-void ConnectionSend(CHANNEL_HANDLE ch, const uint8_t *data, int size) {
-  if (ch == CHANNEL_HANDLE_CDC) {
-    Serial.write(data, size);
-  }
-}
-
-int ConnectionCanSend(CHANNEL_HANDLE ch) {
-  int result;
-  if (ch == CHANNEL_HANDLE_CDC) {
-    result = Serial.availableForWrite();
-  } else {
-    result = 0;
-  }
-  return result;
-}
-
-void ConnectionCloseChannel(CHANNEL_HANDLE ch) {
-}
-
+void lcd_setup();
+void lcd_printf(const uint8_t *msg, int size);

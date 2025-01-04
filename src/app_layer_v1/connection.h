@@ -75,9 +75,6 @@ void ConnectionInit();
 // context for the service provided by the connection library.
 void ConnectionTasks();
 
-// Close USB connection. All existing connections will be gracefully closed.
-void ConnectionShutdownAll();
-
 // whether CHANNEL_TYPE is supported
 bool ConnectionTypeSupported(CHANNEL_TYPE con);
 

@@ -11,6 +11,7 @@ add_compile_options(-DENABLE_LOGGING_STDIO=1)
 set(SOURCES
   main.cpp
   empty.cpp
+  ../app_layer_v1/sync.cpp
   ../app_layer_v1/byte_queue.cpp    
   ../app_layer_v1/protocol.cpp
 )

@@ -22,6 +22,8 @@
 #include "app_layer_v1/timers.h"
 #include "app_layer_v1/uart.h"
 
+#include <cstdio>
+
 void hex_dump(const uint8_t *data, int size) {
   for (int i = 0; i < size; i++) {
     // Print the offset

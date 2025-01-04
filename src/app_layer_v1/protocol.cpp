@@ -246,13 +246,13 @@ void AppProtocolSendMessageWithVarArgSplit(const OUTGOING_MESSAGE *msg,
   }
 }
 
-void AppProtocolTasks(CHANNEL_HANDLE h) {
-  if (state == STATE_CLOSED) return;
+bool AppProtocolTasks(CHANNEL_HANDLE h) {
+  if (state == STATE_CLOSED) return false;
   if (state == STATE_CLOSING && ByteQueueSize(&tx_queue) == 0) {
     log("Finished flushing, closing the channel.");
     ConnectionCloseChannel(h);
     state = STATE_CLOSED;
-    return;
+    return false;
   }
 
   UARTTasks();
@@ -274,6 +274,8 @@ void AppProtocolTasks(CHANNEL_HANDLE h) {
       ConnectionSend(h, data, size);
     }
   }
+
+  return true;
 }
 
 static void Echo() {
